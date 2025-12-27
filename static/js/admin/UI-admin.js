@@ -486,7 +486,7 @@ async function fetchMembersWithFilter() {
 
 
         // 发送请求
-        const response = await fetch(`http://localhost:5000/api/members?${queryParams.toString()}`);
+        const response = await fetch(`https://kczx.pythonanywhere.com/api/members?${queryParams.toString()}`);
         if (!response.ok) {
             throw new Error(`HTTP错误! 状态: ${response.status}`);
         }

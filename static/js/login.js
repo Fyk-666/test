@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const response = await fetch('http://localhost:5000/api/current-user', {
+            const response = await fetch('https://kczx.pythonanywhere.com/api/current-user', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                const response = await fetch('https://kczx.pythonanywhere.com/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const token = localStorage.getItem('token');
             if (token) {
-                await fetch('http://localhost:5000/api/logout', {
+                await fetch('https://kczx.pythonanywhere.com/api/logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`

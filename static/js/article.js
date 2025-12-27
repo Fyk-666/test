@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addImageBlobHook: (blob, callback) => {
                 const formData = new FormData();
                 formData.append('image', blob);
-                fetch('http://localhost:5000/api/upload', {
+                fetch('https://kczx.pythonanywhere.com/api/upload', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
                     body: formData
@@ -189,5 +189,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         }, 3000);
     }
-
 });

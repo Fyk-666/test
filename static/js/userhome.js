@@ -19,7 +19,7 @@ function fetchUserProfile() {
         return;
     }
 
-    fetch('http://localhost:5000/api/user-profile', {
+    fetch('https://kczx.pythonanywhere.com/api/user-profile', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -66,7 +66,7 @@ function fetchRecentActivities() {
         return;
     }
 
-    fetch('http://localhost:5000/api/recent-activities', {
+    fetch('https://kczx.pythonanywhere.com/api/recent-activities', {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -109,7 +109,7 @@ function fetchRecentActivities() {
 // 初始化学习统计图表
 function initLearningChart() {
     const ctx = document.getElementById('learningChart').getContext('2d');
-    fetch('http://localhost:5000/api/learning-stats', {
+    fetch('https://kczx.pythonanywhere.com/api/learning-stats', {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

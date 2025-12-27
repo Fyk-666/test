@@ -78,7 +78,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         try {
             const token = localStorage.getItem('token');
             if (token) {
-                await fetch('http://localhost:5000/api/logout', {
+                await fetch('https://kczx.pythonanywhere.com/api/logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`

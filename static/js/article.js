@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = { title, content, status };
         const url = articleId
-            ? `http://localhost:5000/api/articles/${articleId}`
-            : 'http://localhost:5000/api/articles';
+            ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
+            : 'https://kczx.pythonanywhere.com/api/articles';
         const method = articleId ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -103,8 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const url = articleId
-            ? `http://localhost:5000/api/articles/${articleId}`
-            : 'http://localhost:5000/api/articles';
+            ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
+            : 'https://kczx.pythonanywhere.com/api/articles';
         const method = articleId ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 加载文章用于编辑
     function loadArticleForEdit(articleId, editor) {
-        fetch(`http://localhost:5000/api/articles/${articleId}/raw-md`, {
+        fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/raw-md`, {
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token')
             }
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             editor.setMarkdown(data.content);
             // 获取文章标题
-            return fetch(`http://localhost:5000/api/articles/${articleId}`, {
+            return fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}`, {
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 }
@@ -189,4 +189,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         }, 3000);
     }
+
 });

@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
 
                     // 登录成功后重定向
-                    window.location.href = 'main.html';
+                    window.location.href = 'index.html';
                 } else {
                     // 显示错误消息
                     const errorBox = document.createElement('div');

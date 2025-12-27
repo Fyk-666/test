@@ -29,7 +29,7 @@ async function checkAuth() {
         }
 
         // 只验证一次令牌
-        const response = await fetch('http://localhost:5000/api/validate', {
+        const response = await fetch('https://kczx.pythonanywhere.com/api/validate', {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
@@ -115,7 +115,7 @@ async function displayCurrentUser() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5000/api/current-user', {
+        const response = await fetch('https://kczx.pythonanywhere.com/api/current-user', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
 
@@ -149,7 +149,7 @@ if (document.getElementById('logoutBtn')) {
         try {
             const token = localStorage.getItem('token');
             if (token) {
-                await fetch('http://localhost:5000/api/logout', {
+                await fetch('https://kczx.pythonanywhere.com/api/logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + token

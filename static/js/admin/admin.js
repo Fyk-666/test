@@ -69,7 +69,7 @@ const activityTexts = {
 // 获取成员数据
 async function fetchMembers() {
     try {
-        const response = await fetch('http://localhost:5000/api/members');
+        const response = await fetch('https://kczx.pythonanywhere.com/api/members');
         if (!response.ok) {
             throw new Error('请求失败');
         }
@@ -174,7 +174,7 @@ function openEditMember(memberId) {
 // 获取成员详情
 async function fetchMemberDetails(memberId) {
     try {
-        const response = await fetch(`http://localhost:5000/api/members/${memberId}`);
+        const response = await fetch(`https://kczx.pythonanywhere.com/api/members/${memberId}`);
         if (!response.ok) {
             throw new Error('无法获取成员详情');
         }
@@ -242,7 +242,7 @@ document.getElementById('saveEditMember').addEventListener('click', function() {
     const email = document.getElementById('editEmail').value;
     const level = document.getElementById('editLevel').value;
 
-    fetch(`http://localhost:5000/api/members/${memberId}/edit`, {
+    fetch(`https://kczx.pythonanywhere.com/api/members/${memberId}/edit`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ memberButtons.forEach(button => {
     });
 });
 function toggleBanMember(memberId) {
-    fetch(`http://localhost:5000/api/members/${memberId}/ban`, {
+    fetch(`https://kczx.pythonanywhere.com/api/members/${memberId}/ban`, {
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('token')
@@ -312,7 +312,7 @@ function toggleBanMember(memberId) {
 function deleteMember(memberId) {
     if (!confirm(`确定删除成员 ${memberId} 吗？`)) return;
 
-    fetch(`http://localhost:5000/api/members/${encodeURIComponent(memberId)}/delete`, {
+    fetch(`https://kczx.pythonanywhere.com/api/members/${encodeURIComponent(memberId)}/delete`, {
         method: 'DELETE',
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -398,7 +398,7 @@ function updateClock() {
 }
 async function fetchLogs() {
     try {
-        const response = await fetch('http://localhost:5000/api/logs');
+        const response = await fetch('https://kczx.pythonanywhere.com/api/logs');
         if (!response.ok) {
             throw new Error('请求失败');
         }
@@ -460,7 +460,7 @@ function getBrowserName(userAgent) {
 async function fetchDashboardStats() {
     try {
         // 修正API路径
-        const response = await fetch('http://localhost:5000/api/stats');
+        const response = await fetch('https://kczx.pythonanywhere.com/api/stats');
         if (!response.ok) {
             throw new Error('获取统计信息失败');
         }
@@ -478,7 +478,7 @@ async function fetchDashboardStats() {
 }
 async function renderVisitsChart() {
     try {
-        const response = await fetch('http://localhost:5000/api/visits/weekly', {
+        const response = await fetch('https://kczx.pythonanywhere.com/api/visits/weekly', {
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token')
             }
@@ -586,7 +586,7 @@ async function renderVisitsChart() {
 // 获取最近活动数据
 async function fetchRecentActivities() {
     try {
-        const response = await fetch('http://localhost:5000/api/activities/recent', {
+        const response = await fetch('https://kczx.pythonanywhere.com/api/activities/recent', {
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token')
             }
@@ -711,7 +711,7 @@ async function fetchArticles(page = 1) {
         });
 
         // 发送请求
-        const response = await fetch(`http://localhost:5000/api/articles?${params.toString()}`);
+        const response = await fetch(`https://kczx.pythonanywhere.com/api/articles?${params.toString()}`);
         if (!response.ok) {
             throw new Error('请求失败');
         }
@@ -785,7 +785,7 @@ function updateArticlesTable(articles) {
 
 // 更新文章标题
 function updateArticleTitle(articleId, newTitle) {
-    fetch(`http://localhost:5000/api/articles/${articleId}/title`, {
+    fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/title`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

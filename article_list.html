@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章列表</title>
+    <style>
+        /* --- 样式部分（保持之前的毛玻璃效果） --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { width: 90%; max-width: 1200px; margin-top: 60px; }
+        .header-title { text-align: center; font-size: 3.5rem; font-weight: bold; letter-spacing: 5px; margin-bottom: 40px; }
+        .action-bar { display: flex; justify-content: center; gap: 30px; margin-bottom: 60px; }
+        .btn { padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 15px; cursor: pointer; text-decoration: none; transition: all 0.3s; }
+        .btn-primary { background: white; color: #764ba2; }
+        .btn-glass { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); }
+        
+        .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        
+        /* 卡片样式 */
+        .article-card {
+            display: block; text-decoration: none; color: white;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px; height: 200px; display: flex; flex-direction: column;
+            justify-content: space-between; transition: 0.3s; position: relative;
+        }
+        .article-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
+        .card-title { font-size: 1.5rem; text-align: center; font-weight: bold; }
+        .card-divider { height: 1px; border-top: 1px dashed rgba(255,255,255,0.5); margin: 10px 40px; }
+        .card-info { text-align: center; font-size: 0.9rem; opacity: 0.8; }
+        #loading { text-align: center; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="header-title">文章</h1>
+
+        <div class="action-bar">
+            <!-- 这里可以填你后台管理系统的发布页地址 -->
+            <a href="https://kczx.pythonanywhere.com/articles-view" class="btn btn-primary">管理文章</a>
+            <a href="article.html" class="btn btn-glass">新建草稿</a>
+        </div>
+
+        <div id="loading">正在加载中...</div>
+        <div id="article-grid" class="article-grid"></div>
+    </div>
+
+    <script>
+        // --- 核心配置：这里非常重要 ---
+        
+        // 1. 你的 PythonAnywhere 后端地址 (注意：最后不要带斜杠)
+        const BACKEND_API = "https://kczx.pythonanywhere.com/api/articles?page_size=50";
+        
+        // 2. 你的 GitHub Pages 文章存放基础路径
+        const GITHUB_HTML_BASE = "https://fyk-666.github.io/test/static/articles/html/";
+
+        async function fetchArticles() {
+            const grid = document.getElementById('article-grid');
+            const loading = document.getElementById('loading');
+
+            try {
+                // 向 PythonAnywhere 获取文章列表数据
+                const response = await fetch(BACKEND_API);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+
+                if (!data.articles || data.articles.length === 0) {
+                    loading.innerText = "暂无文章";
+                    return;
+                }
+
+                // 循环生成卡片
+                data.articles.forEach(article => {
+                    const card = document.createElement('a');
+                    card.className = 'article-card';
+                    
+                    // 拼接跳转到 GitHub 的静态 HTML 路径
+                    card.href = `${GITHUB_HTML_BASE}${article.id}.html`;
+                    card.target = "_blank";
+
+                    card.innerHTML = `
+                        <div class="card-title">${article.title}</div>
+                        <div class="card-divider"></div>
+                        <div class="card-info">
+                            <span>👤 ${article.author}</span> · 
+                            <span>📅 ${article.created_at.substring(0, 10)}</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error("加载失败:", error);
+                loading.innerText = "无法连接到后端服务器，请检查跨域设置。";
+            }
+        }
+
+        window.onload = fetchArticles;
+    </script>
+</body>
+</html>

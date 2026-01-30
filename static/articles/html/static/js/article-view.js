@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 设置正确的API基础URL
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'https://kczx.pythonanywhere.com/api';
 
     // 从URL获取文章ID
     const path = window.location.pathname;

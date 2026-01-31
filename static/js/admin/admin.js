@@ -1,3 +1,36 @@
+// 在 admin.js 的最底部添加，确保不在任何 {} 内部
+window.deleteArticle = async function(articleId) {
+    if (!confirm(`确定要删除文章 (ID: ${articleId}) 吗？\n该操作将同时删除服务器文件、数据库记录和 GitHub 上的备份。`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('文章及其关联文件已成功删除');
+            // 刷新列表
+            if (typeof fetchArticles === 'function') {
+                fetchArticles(1);
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert('删除失败: ' + (data.error || '未知错误'));
+        }
+    } catch (error) {
+        console.error('删除请求出错:', error);
+        alert('网络请求失败，请检查控制台');
+    }
+};
+
 function updateMembersTable(data) {
     const tbody = document.querySelector('.members-table tbody');
     // 检查数据是否为数组

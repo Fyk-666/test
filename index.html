@@ -16,9 +16,10 @@
                 <span>班级网站</span>
             </a>
             <ul class="nav-links">
-                <li><a href="#" class="active">首页</a></li>
+                <li><a href="index.html" class="active">首页</a></li>
                 <li><a href="#">班级公告</a></li>
                 <li><a href="toolbox.html">工具箱</a></li>
+                <li><a href="article.html">发文章</a></li>
                 <li><a href="#">班级相册</a></li>
                 <li><a href="#">活动安排</a></li>
                 <li><a href="#">关于我们</a></li>
@@ -30,7 +31,7 @@
                 </div>
                 <div class="user-actions">
                     <a href="login.html" class="btn login-btn" id="loginBtn">登录</a>
-                    <a href="#" class="btn register-btn" id="registerBtn">注册</a>
+                    <a href="register.html" class="btn register-btn" id="registerBtn">注册</a>
                     <a href="#" class="btn logout-btn" id="logoutBtn" style="display: none;">退出</a>
                 </div>
             </div>
@@ -48,8 +49,8 @@
                 <p>这里是我们共同学习、成长、交流的平台</p>
                 <div class="clock" id="clock"></div>
                 <div class="header-buttons">
-                    <a href="#" class="btn primary-btn">查看公告</a>
-                    <a href="#" class="btn secondary-btn">加入讨论</a>
+                    <a href="#announcements" class="btn primary-btn">查看公告</a>
+                    <a href="article_list.html" class="btn secondary-btn">加入讨论</a>
                 </div>
             </div>
         </div>
@@ -58,26 +59,26 @@
     <!-- 主要内容区域 -->
     <main class="container">
         <!-- 班级公告 -->
-        <section class="announcements">
+        <section class="announcements" id="announcements">
             <div class="section-header">
                 <h2><i class="fas fa-bullhorn"></i> 最新公告</h2>
-                <a href="#" class="view-all">查看全部</a>
+                <a href="#announcements" class="view-all">查看全部</a>
             </div>
         </section>
 
         <!-- 班级活动 -->
-        <section class="activities">
+        <section class="activities" id="activities">
             <div class="section-header">
                 <h2><i class="fas fa-calendar-alt"></i> 近期活动</h2>
-                <a href="#" class="view-all">查看全部</a>
+                <a href="#activities" class="view-all">查看全部</a>
             </div>
         </section>
 
         <!-- 班级相册 -->
-        <section class="gallery">
+        <section class="gallery" id="gallery">
             <div class="section-header">
                 <h2><i class="fas fa-images"></i> 班级相册</h2>
-                <a href="#" class="view-all">查看全部</a>
+                <a href="#gallery" class="view-all">查看全部</a>
             </div>
         </section>
     </main>
@@ -97,10 +98,11 @@
             <div class="footer-links">
                 <h4>快速链接</h4>
                 <ul>
-                    <li><a href="#">首页</a></li>
-                    <li><a href="#">班级公告</a></li>
-                    <li><a href="#">学习资源</a></li>
-                    <li><a href="#">班级相册</a></li>
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="announcements.html">班级公告</a></li>
+                    <li><a href="toolbox.html">学习资源</a></li>
+                    <li><a href="gallery.html">班级相册</a></li>
+                    <li><a href="article.html">发文章</a></li>
                     <li><a href="toolbox.html">工具箱</a></li>
                     <li><a href="#">关于我们</a></li>
                 </ul>
@@ -125,5 +127,4 @@
     <script src="static/js/script.js"></script>
     <script src="static/js/auth.js"></script>
 </body>
-
 </html>

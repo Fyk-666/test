@@ -588,7 +588,7 @@ async function renderVisitsChart() {
         console.error('渲染访问量图表失败:', error);
         showNotification('无法加载访问量图表', 'error');
     } finally {
-        if (loadingElement) loadingElement.style.display = 'none';
+       // if (loadingElement) loadingElement.style.display = 'none';
     }
 }
 
@@ -865,6 +865,5 @@ document.querySelectorAll('.articles-tabs .tab-btn').forEach(button => {
         fetchArticles(1);
     });
 });
-
 
 

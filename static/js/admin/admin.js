@@ -369,9 +369,11 @@ if (publishButton) {
 }
 
 [closePublishModal, cancelPublishButton].forEach(button => {
-    button.addEventListener('click', function() {
-        publishModal.classList.remove('active');
-    });
+    if (button) { // 只有按钮存在时才绑定
+        button.addEventListener('click', function() {
+            if (publishModal) publishModal.classList.remove('active');
+        });
+    }
 });
 
 // 点击模态框外部关闭
@@ -855,4 +857,5 @@ document.querySelectorAll('.articles-tabs .tab-btn').forEach(button => {
         fetchArticles(1);
     });
 });
+
 

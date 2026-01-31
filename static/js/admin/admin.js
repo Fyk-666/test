@@ -355,33 +355,41 @@ tabButtons.forEach(button => {
     });
 });
 
-// 发布文章模态框
+// --- 发布文章模态框安全初始化 ---
 const publishButton = document.querySelector('[href="#articles"] + .section-actions .btn');
 const publishModal = document.getElementById('publish-modal');
 const closePublishModal = document.querySelector('.close-modal');
 const cancelPublishButton = document.querySelector('.cancel-btn');
 
-if (publishButton) {
+// 只有当发布按钮和模态框都存在时，才绑定打开事件
+if (publishButton && publishModal) {
     publishButton.addEventListener('click', function(e) {
         e.stopPropagation();
         publishModal.classList.add('active');
     });
 }
 
-[closePublishModal, cancelPublishButton].forEach(button => {
-    if (button) { // 只有按钮存在时才绑定
-        button.addEventListener('click', function() {
-            if (publishModal) publishModal.classList.remove('active');
-        });
-    }
-});
+// 只有当按钮存在时，才绑定关闭事件
+if (closePublishModal && publishModal) {
+    closePublishModal.addEventListener('click', function() {
+        publishModal.classList.remove('active');
+    });
+}
 
-// 点击模态框外部关闭
-publishModal.addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.classList.remove('active');
-    }
-});
+if (cancelPublishButton && publishModal) {
+    cancelPublishButton.addEventListener('click', function() {
+        publishModal.classList.remove('active');
+    });
+}
+
+// 点击模态框背景关闭（也要安全检查）
+if (publishModal) {
+    publishModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+}
 
 // 初始化时钟功能
 function updateClock() {
@@ -857,5 +865,6 @@ document.querySelectorAll('.articles-tabs .tab-btn').forEach(button => {
         fetchArticles(1);
     });
 });
+
 
 

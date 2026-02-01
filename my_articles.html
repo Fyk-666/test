@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的文章</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- 复用之前的毛玻璃 UI 样式 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 60px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .sub-header {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #764ba2;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn-primary:hover { transform: translateY(-3px); }
+
+        /* 返回首页按钮 */
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        .btn-glass:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-3px); }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        .article-card {
+            display: block;
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            padding: 30px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s, background 0.3s;
+            position: relative;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-published { background: rgba(46, 204, 113, 0.4); color: #eaffea; border: 1px solid rgba(46, 204, 113, 0.6); }
+        .status-draft { background: rgba(241, 196, 15, 0.4); color: #fffbea; border: 1px solid rgba(241, 196, 15, 0.6); }
+
+        .card-title {
+            font-size: 1.4rem;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .card-divider {
+            height: 1px;
+            border: none;
+            border-top: 1px dashed rgba(255,255,255,0.5);
+            margin: 10px 20px;
+        }
+
+        .card-info {
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        #loading { text-align: center; font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-top: 50px;}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="header-title">我的文章</h1>
+        <div class="sub-header" id="welcome-msg">管理您发布的个人内容</div>
+
+        <div class="action-bar">
+            <!-- 智能跳转到发布页 -->
+            <a href="#" id="publishBtn" class="btn btn-primary">
+                <i class="fas fa-pen-nib"></i> 写新文章
+            </a>
+            <!-- 返回公共列表 -->
+            <a href="#" id="backBtn" class="btn btn-glass">
+                <i class="fas fa-arrow-left"></i> 浏览全部文章
+            </a>
+        </div>
+
+        <div id="loading">正在验证身份并获取数据...</div>
+        <div id="article-grid" class="article-grid"></div>
+    </div>
+
+    <script>
+        // --- 1. JWT 解析函数 (用于获取当前用户名) ---
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // --- 2. 配置 ---
+        // 智能识别当前是否在 test 目录下 (GitHub Pages 环境)
+        const isTestEnv = window.location.pathname.includes('/test/');
+        const prefix = isTestEnv ? '/test' : '';
+        const GITHUB_PAGE_BASE = `https://fyk-666.github.io/test/static/articles/html/`;
+        
+        // 获取所有状态的文章，包括草稿
+        const API_URL = "https://kczx.pythonanywhere.com/api/articles?page_size=100&status=all";
+
+        // --- 3. 核心逻辑 ---
+        async function loadMyArticles() {
+            const grid = document.getElementById('article-grid');
+            const loading = document.getElementById('loading');
+            const welcomeMsg = document.getElementById('welcome-msg');
+
+            // 1. 获取 Token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                loading.innerHTML = '您尚未登录，无法查看个人文章。<br><a href="/login" style="color:white;text-decoration:underline;">去登录</a>';
+                return;
+            }
+
+            // 2. 解析用户信息
+            const user = parseJwt(token);
+            if (!user) {
+                loading.innerText = '身份验证失效，请重新登录。';
+                return;
+            }
+            const currentUsername = user.username;
+            welcomeMsg.innerText = `当前用户：${currentUsername} | 管理您的创作`;
+
+            try {
+                // 3. 请求数据
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (!data.articles) {
+                    loading.style.display = 'block';
+                    loading.innerText = '数据获取异常';
+                    return;
+                }
+
+                // 4. 前端过滤：只保留作者是当前用户的文章
+                // 注意：这里比较的是 username，如果你的后端返回的是 author_name 字段
+                const myArticles = data.articles.filter(article => article.author === currentUsername);
+
+                if (myArticles.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:1.2rem;opacity:0.8;">您还没有发布过任何文章</div>';
+                    return;
+                }
+
+                // 5. 渲染卡片
+                myArticles.forEach(article => {
+                    // 构建跳转链接 (GitHub Pages)
+                    const targetUrl = `${GITHUB_PAGE_BASE}${article.id}.html`;
+                    
+                    // 构建编辑链接 (智能前缀 + 传参)
+                    // 比如: /test/article?id=12345
+                    const editUrl = `${prefix}/article?id=${article.id}`;
+
+                    const card = document.createElement('div'); // 外层容器
+                    card.style.position = 'relative'; // 为了定位卡片
+                    
+                    // 卡片主体 (点击跳转到文章详情)
+                    // 如果是草稿，可能 GitHub 上还没生成，你可以选择跳到编辑页，这里默认都跳 HTML
+                    const cardLink = document.createElement('a');
+                    cardLink.className = 'article-card';
+                    cardLink.href = targetUrl;
+                    cardLink.target = '_blank';
+
+                    // 状态标签文本
+                    const statusText = article.status === 'published' ? '已发布' : '草稿';
+                    const statusClass = article.status === 'published' ? 'status-published' : 'status-draft';
+
+                    cardLink.innerHTML = `
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                        <div class="card-title">${article.title}</div>
+                        <div class="card-divider"></div>
+                        <div class="card-info">
+                            <span>📅 ${new Date(article.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <!-- 这里加一个提示，实际上这个卡片本身就是链接 -->
+                        <div class="card-info" style="margin-top:auto; font-size:0.8rem; color: #a8dadc;">
+                            <i class="fas fa-external-link-alt"></i> 点击查看
+                        </div>
+                    `;
+
+                    // 将卡片加入网格
+                    grid.appendChild(cardLink);
+
+                    // --- 6. (可选) 如果你想在卡片上直接加个“编辑”按钮 ---
+                    // 这里为了保持和你之前的 UI 一致，我没加悬浮按钮，
+                    // 但你可以点击进去查看，或者在发布页通过 ID 加载回来编辑。
+                    // 如果需要编辑按钮，可以在这里动态插入一个绝对定位的按钮。
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.style.display = 'block';
+                loading.innerText = '加载失败，请检查网络或后端服务';
+            }
+        }
+
+        // --- 页面初始化 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 设置按钮链接
+            const publishBtn = document.getElementById('publishBtn');
+            const backBtn = document.getElementById('backBtn');
+            
+            if (publishBtn) publishBtn.href = prefix + '/article';
+            if (backBtn) backBtn.href = prefix + '/article_list';
+
+            // 加载数据
+            loadMyArticles();
+        });
+    </script>
+</body>
+</html>

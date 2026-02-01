@@ -17,15 +17,34 @@ document.addEventListener('DOMContentLoaded', () => {
         hooks: {
             addImageBlobHook: (blob, callback) => {
                 const formData = new FormData();
-                formData.append('image', blob);
+                const fileName = 'paste_' + new Date().getTime() + '.png';
+                // 注意：把 key 改成 'file'，把文件名加上
+                formData.append('file', blob, fileName); 
+
                 fetch('https://kczx.pythonanywhere.com/api/upload', {
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    // 注意：上传文件通常不需要手动设置 Content-Type，浏览器会自动设置 multipart/form-data
+                    // 但需要 Authorization 头
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
                     body: formData
                 })
-                .then(res => res.json())
-                .then(data => callback(data.url, 'alt'))
-                .catch(() => callback('', '上传失败'));
+                .then(res => {
+                    if (!res.ok) throw new Error("Upload failed: " + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.url) {
+                        callback(data.url, 'image');
+                    } else {
+                        callback('', '上传成功但无URL');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    callback('', '上传失败');
+                });
             }
         }
     });
@@ -190,3 +209,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 });
+

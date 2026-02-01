@@ -46,9 +46,8 @@
         <h1 class="header-title">文章</h1>
 
         <div class="action-bar">
-            <!-- 这里可以填你后台管理系统的发布页地址 -->
-            <a href="https://kczx.pythonanywhere.com/articles-view" class="btn btn-primary">管理文章</a>
-            <a href="article.html" class="btn btn-glass">新建草稿</a>
+            <a href="#" id="publishBtn" class="btn btn-primary">发布文章</a>
+            <a href="#" id="draftBtn" class="btn btn-glass">新建草稿</a>
         </div>
 
         <div id="loading">正在加载中...</div>
@@ -56,6 +55,19 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const publishBtn = document.getElementById('publishBtn');
+            const draftBtn = document.getElementById('draftBtn');
+            
+            // 智能识别前缀
+            const prefix = window.location.pathname.includes('/test/') ? '/test' : '';
+            
+            // 假设你的发布页面叫 article.html
+            if (publishBtn) publishBtn.href = prefix + '/article'; 
+            if (draftBtn) draftBtn.href = prefix + '/article'; 
+            
+            loadArticles(); // 调用原有的加载函数
+        });
         // --- 核心配置：这里非常重要 ---
         
         // 1. 你的 PythonAnywhere 后端地址 (注意：最后不要带斜杠)
@@ -110,3 +122,4 @@
 </body>
 
 </html>
+

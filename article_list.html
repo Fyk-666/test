@@ -59,7 +59,7 @@
         // --- 核心配置：这里非常重要 ---
         
         // 1. 你的 PythonAnywhere 后端地址 (注意：最后不要带斜杠)
-        const BACKEND_API = "https://kczx.pythonanywhere.com/api/articles?page_size=50";
+        const BACKEND_API = "https://kczx.pythonanywhere.com/api/articles?page_size=50&status=published";
         
         // 2. 你的 GitHub Pages 文章存放基础路径
         const GITHUB_HTML_BASE = "https://fyk-666.github.io/test/static/articles/html/";
@@ -108,4 +108,5 @@
         window.onload = fetchArticles;
     </script>
 </body>
+
 </html>

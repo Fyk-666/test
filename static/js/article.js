@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- 图片压缩工具函数 ---
+    // --- 1. 图片压缩工具函数 ---
     async function compressImage(blob, maxWidth = 1200, quality = 0.7) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -27,6 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- 2. 智能跳转函数 ---
+    function smartRedirect() {
+        const baseUrl = window.location.origin;
+        const pathName = window.location.pathname;
+        
+        // 检查当前是否在 GitHub 的 /test/ 子目录下
+        if (pathName.includes('/test/')) {
+            window.location.href = baseUrl + '/test/article_list';
+        } else {
+            // Netlify 或本地环境，直接跳到根目录下的 article_list
+            window.location.href = baseUrl + '/article_list';
+        }
+    }
+
     // 初始化 Toast-UI Editor
     const editor = new toastui.Editor({
         el: document.getElementById('editor-content'),
@@ -43,10 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ['scrollSync']
         ],
         hooks: {
-            // 上传图片并压缩
+            // --- 修改：图片上传前先压缩 ---
             addImageBlobHook: async (blob, callback) => {
                 try {
+                    // 执行压缩
                     const compressedBlob = await compressImage(blob);
+                    
                     const formData = new FormData();
                     const fileName = 'img_' + new Date().getTime() + '.jpg';
                     formData.append('file', compressedBlob, fileName); 
@@ -68,14 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         callback('', '上传成功但无URL');
                     }
                 } catch (err) {
-                    console.error("图片上传/压缩失败:", err);
+                    console.error("图片上传失败:", err);
                     callback('', '上传失败');
                 }
             }
         }
     });
 
-    // 从URL获取文章ID（用于编辑）
+    // 编辑模式加载逻辑 (保持不变)
     const urlParams = new URLSearchParams(window.location.search);
     const articleId = urlParams.get('id');
     if (articleId) {
@@ -111,23 +127,21 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(formData)
         })
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.error || '操作失败') });
-            }
+            if (!response.ok) return response.json().then(err => { throw new Error(err.error || '操作失败') });
             return response.json();
         })
         .then(data => {
             const message = articleId ? '文章更新成功' : '文章发布成功';
             showNotification(message, 'success');
             
-            // --- 修改这里：跳转到 /article_list ---
+            // --- 核心修改：使用智能跳转 ---
             setTimeout(() => {
-                window.location.href = "/article_list"; 
+                smartRedirect();
             }, 1200);
         })
         .catch(error => {
             console.error('操作失败:', error);
-            showNotification(error.message || '操作失败，请检查网络连接', 'error');
+            showNotification(error.message || '操作失败', 'error');
         });
     });
 
@@ -165,11 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             console.error('保存草稿失败:', error);
-            showNotification('草稿保存失败，请检查网络连接', 'error');
+            showNotification('草稿保存失败', 'error');
         });
     });
 
-    // 加载文章函数 (保持不变)
+    // 辅助函数 (loadArticleForEdit 和 showNotification) 保持不变即可...
     function loadArticleForEdit(articleId, editor) {
         fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/raw-md`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
@@ -186,12 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('article-title').value = article.title;
             document.getElementById('article-status').value = article.status;
         })
-        .catch(error => {
-            console.error('加载文章失败:', error);
-        });
+        .catch(error => console.error('加载文章失败:', error));
     }
 
-    // 显示通知函数 (保持不变)
     function showNotification(message, type = 'success') {
         let container = document.querySelector('.notification-container');
         if (!container) {

@@ -130,6 +130,7 @@
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -204,7 +205,17 @@
             // 1. 获取 Token
             const token = localStorage.getItem('token');
             if (!token) {
-                loading.innerHTML = '您尚未登录，无法查看个人文章。<br><a href="/login" style="color:white;text-decoration:underline;">去登录</a>';
+                // --- 核心修改：使用 prefix 变量实现自动适应跳转 ---
+                // 同时也加上了 class="btn btn-glass" 让它变的好看
+                loading.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 1.1rem;">
+                        <i class="fas fa-lock" style="margin-right: 8px;"></i>
+                        您尚未登录，无法查看个人文章
+                    </div>
+                    <a href="${prefix}/login" class="btn btn-glass">
+                        <i class="fas fa-sign-in-alt"></i> 去登录
+                    </a>
+                `;
                 return;
             }
 

@@ -25,11 +25,11 @@
             <span>班级网站</span>
         </a>
         <ul class="nav-links">
-            <li><a href="#">首页</a></li>
-            <li><a href="#">班级公告</a></li>
+            <li><a href="index.html">首页</a></li>
+            <li><a href="index.html#announcements">班级公告</a></li>
             <li><a href="toolbox.html">工具箱</a></li>
-            <li><a href="#">班级相册</a></li>
-            <li><a href="#">活动安排</a></li>
+            <li><a href="index.html#gallery">班级相册</a></li>
+            <li><a href="index.html#activities">活动安排</a></li>
             <li><a href="#">关于我们</a></li>
         </ul>
         <div class="user-section">
@@ -39,7 +39,7 @@
             </div>
             <div class="user-actions">
                 <a href="login.html" class="btn login-btn" id="loginBtn">登录</a>
-                <a href="#" class="btn register-btn" id="registerBtn">注册</a>
+                <a href="register.html" class="btn register-btn" id="registerBtn">注册</a>
                 <a href="#" class="btn logout-btn" id="logoutBtn" style="display: none;">退出</a>
             </div>
         </div>
@@ -62,6 +62,34 @@
                 <label for="article-title">标题</label>
                 <input type="text" id="article-title" placeholder="输入文章标题" required>
             </div>
+                    <!-- 新增：标签管理区域 -->
+        <div class="tag-section-glass">
+            <!-- 输入主区域 -->
+            <div class="tag-input-wrapper">
+                <div class="tag-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div id="selected-tags" class="tags-display">
+                    <!-- 选中的标签会显示在这里 -->
+                </div>
+                <input type="text" id="tag-input" placeholder="输入自定义标签按回车..." autocomplete="off">
+            </div>
+
+            <!-- 默认推荐标签（全部显示） -->
+            <div class="preset-tags-container">
+                <span class="preset-label">快捷推荐:</span>
+                <div class="preset-tags-list">
+                    <button type="button" class="preset-chip" onclick="addTag('学习笔记')">学习笔记</button>
+                    <button type="button" class="preset-chip" onclick="addTag('生活碎片')">生活碎片</button>
+                    <button type="button" class="preset-chip" onclick="addTag('技术分享')">技术分享</button>
+                    <button type="button" class="preset-chip" onclick="addTag('校园活动')">校园活动</button>
+                    <button type="button" class="preset-chip" onclick="addTag('计划总结')">计划总结</button>
+                    <button type="button" class="preset-chip" onclick="addTag('随笔感悟')">随笔感悟</button>
+                </div>
+            </div>
+        </div>
+        <!-- 编辑器 -->
+        <div id="editor-content"></div>
             <div class="form-group">
                 <label for="article-status">状态</label>
                 <select id="article-status">
@@ -92,10 +120,10 @@
         <div class="footer-links">
             <h4>快速链接</h4>
             <ul>
-                <li><a href="#">首页</a></li>
-                <li><a href="#">班级公告</a></li>
-                <li><a href="#">学习资源</a></li>
-                <li><a href="#">班级相册</a></li>
+                <li><a href="index.html">首页</a></li>
+                <li><a href="index.html#announcements">班级公告</a></li>
+                <li><a href="toolbox.html">学习资源</a></li>
+                <li><a href="index.html#gallery">班级相册</a></li>
                 <li><a href="toolbox.html">工具箱</a></li>
                 <li><a href="#">关于我们</a></li>
             </ul>
@@ -122,5 +150,4 @@
 <script src="static/js/article.js"></script>
 <script src="static/js/auth.js"></script>
 </body>
-
 </html>

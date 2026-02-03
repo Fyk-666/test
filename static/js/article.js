@@ -7,18 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
             img.onload = () => {
                 let width = img.width;
                 let height = img.height;
-
                 if (width > maxWidth) {
                     height = Math.round((height * maxWidth) / width);
                     width = maxWidth;
                 }
-
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-
                 canvas.toBlob((compressedBlob) => {
                     resolve(compressedBlob);
                 }, 'image/jpeg', quality);
@@ -31,17 +28,89 @@ document.addEventListener('DOMContentLoaded', () => {
     function smartRedirect() {
         const baseUrl = window.location.origin;
         const pathName = window.location.pathname;
-        
-        // 检查当前是否在 GitHub 的 /test/ 子目录下
         if (pathName.includes('/test/')) {
             window.location.href = baseUrl + '/test/article_list';
         } else {
-            // Netlify 或本地环境，直接跳到根目录下的 article_list
             window.location.href = baseUrl + '/article_list';
         }
     }
 
-    // 初始化 Toast-UI Editor
+    // --- 3. 标签系统逻辑 ---
+    let tags = [];
+    const keywordMap = {
+        '学习': '学习笔记', '作业': '学习笔记', '复习': '学习笔记', '考试': '学习笔记', '笔记': '学习笔记',
+        '生活': '生活碎片', '记录': '生活碎片', '日常': '生活碎片', '吃': '生活碎片',
+        '技术': '技术分享', '代码': '技术分享', '编程': '技术分享', '教程': '技 术分享',
+        '活动': '校园活动', '比赛': '校园活动', '社团': '校园活动',
+        '总结': '计划总结', '计划': '计划总结', '目标': '计划总结'
+    };
+
+    const selectedTagsContainer = document.getElementById('selected-tags');
+    const tagInput = document.getElementById('tag-input');
+    const titleInput = document.getElementById('article-title');
+
+    // 添加标签
+    // 在你的 JS 代码中 addTag 函数建议修改如下，增加一些控制：
+    window.addTag = function(tagName) {
+        tagName = tagName.trim();
+        if (!tagName) return;
+
+        if (tags.length >= 5) {
+            showNotification('最多只能添加5个标签哦', 'error');
+            return;
+        }
+        
+        if (tags.includes(tagName)) {
+            showNotification('该标签已存在', 'error');
+            return;
+        }
+
+        tags.push(tagName);
+        renderTags();
+        document.getElementById('tag-input').value = '';
+    };
+
+    // 删除标签
+    window.removeTag = function(index) {
+        tags.splice(index, 1);
+        renderTags();
+    };
+
+    // 渲染标签 UI
+    function renderTags() {
+        if (!selectedTagsContainer) return;
+        selectedTagsContainer.innerHTML = '';
+        tags.forEach((tag, index) => {
+            const span = document.createElement('span');
+            span.className = 'tag-badge';
+            span.innerHTML = `${tag} <i class="fas fa-times tag-remove" onclick="removeTag(${index})"></i>`;
+            selectedTagsContainer.appendChild(span);
+        });
+    }
+
+    // 自动匹配逻辑
+    if (titleInput) {
+        titleInput.addEventListener('blur', () => {
+            const title = titleInput.value;
+            for (const key in keywordMap) {
+                if (title.includes(key)) {
+                    addTag(keywordMap[key]);
+                }
+            }
+        });
+    }
+
+    // 手动输入标签
+    if (tagInput) {
+        tagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag(tagInput.value);
+            }
+        });
+    }
+
+    // --- 4. 初始化 Toast-UI Editor ---
     const editor = new toastui.Editor({
         el: document.getElementById('editor-content'),
         height: '500px',
@@ -57,12 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ['scrollSync']
         ],
         hooks: {
-            // --- 修改：图片上传前先压缩 ---
             addImageBlobHook: async (blob, callback) => {
                 try {
-                    // 执行压缩
                     const compressedBlob = await compressImage(blob);
-                    
                     const formData = new FormData();
                     const fileName = 'img_' + new Date().getTime() + '.jpg';
                     formData.append('file', compressedBlob, fileName); 
@@ -77,12 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!response.ok) throw new Error("Upload failed");
                     const data = await response.json();
-
-                    if (data.url) {
-                        callback(data.url, 'image');
-                    } else {
-                        callback('', '上传成功但无URL');
-                    }
+                    if (data.url) callback(data.url, 'image');
                 } catch (err) {
                     console.error("图片上传失败:", err);
                     callback('', '上传失败');
@@ -91,16 +152,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 编辑模式加载逻辑 (保持不变)
+    // --- 5. 编辑模式加载 ---
     const urlParams = new URLSearchParams(window.location.search);
     const articleId = urlParams.get('id');
     if (articleId) {
         loadArticleForEdit(articleId, editor);
-        document.querySelector('h2').textContent = '编辑文章';
-        document.getElementById('publish-article').textContent = '更新文章';
+        const h2 = document.querySelector('h2');
+        if (h2) h2.textContent = '编辑文章';
+        const pubBtn = document.getElementById('publish-article');
+        if (pubBtn) pubBtn.textContent = '更新文章';
     }
 
-    // 发布/更新文章
+    // --- 6. 发布/更新文章 ---
     document.getElementById('publish-article').addEventListener('click', function(e) {
         e.preventDefault();
         const title = document.getElementById('article-title').value;
@@ -112,7 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const formData = { title, content, status };
+        // 标签必填校验
+        if (tags.length === 0) {
+            showNotification('请至少选择或输入一个标签', 'error');
+            return;
+        }
+
+        const formData = { 
+            title, 
+            content, 
+            status, 
+            tags: tags.join(',') // 将标签数组转为逗号分隔字符串
+        };
+
         const url = articleId
             ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
             : 'https://kczx.pythonanywhere.com/api/articles';
@@ -131,13 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            const message = articleId ? '文章更新成功' : '文章发布成功';
-            showNotification(message, 'success');
-            
-            // --- 核心修改：使用智能跳转 ---
-            setTimeout(() => {
-                smartRedirect();
-            }, 1200);
+            showNotification(articleId ? '文章更新成功' : '文章发布成功', 'success');
+            setTimeout(() => smartRedirect(), 1200);
         })
         .catch(error => {
             console.error('操作失败:', error);
@@ -145,53 +215,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 保存草稿
-    document.querySelector('.draft-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const title = document.getElementById('article-title').value;
-        const content = editor.getMarkdown();
+    // --- 7. 保存草稿 ---
+    const draftBtn = document.querySelector('.draft-btn');
+    if (draftBtn) {
+        draftBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('article-title').value;
+            const content = editor.getMarkdown();
+            const formData = { title, content, status: 'draft', tags: tags.join(',') };
+            const url = articleId
+                ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
+                : 'https://kczx.pythonanywhere.com/api/articles';
+            const method = articleId ? 'PUT' : 'POST';
 
-        if (!title || !content) {
-            showNotification('标题和内容不能为空', 'error');
-            return;
-        }
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(() => showNotification('草稿保存成功', 'success'))
+            .catch(() => showNotification('草稿保存失败', 'error'));
+        });
+    }
 
-        const formData = { title, content, status: 'draft' };
-        const url = articleId
-            ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
-            : 'https://kczx.pythonanywhere.com/api/articles';
-        const method = articleId ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            },
-            body: JSON.stringify(formData)
+    // --- 8. 辅助函数 ---
+    function loadArticleForEdit(articleId, editor) {
+        // 使用更安全的 fetch 方式
+        fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/raw-md`, {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         })
         .then(response => {
-            if (!response.ok) throw new Error('保存失败');
+            if (!response.ok) throw new Error('CORS or Not Found');
             return response.json();
         })
         .then(data => {
-            showNotification('草稿保存成功', 'success');
-        })
-        .catch(error => {
-            console.error('保存草稿失败:', error);
-            showNotification('草稿保存失败', 'error');
-        });
-    });
-
-    // 辅助函数 (loadArticleForEdit 和 showNotification) 保持不变即可...
-    function loadArticleForEdit(articleId, editor) {
-        fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/raw-md`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        })
-        .then(response => response.json())
-        .then(data => {
             editor.setMarkdown(data.content);
             return fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}`, {
+                method: 'GET',
                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
             });
         })
@@ -199,6 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(article => {
             document.getElementById('article-title').value = article.title;
             document.getElementById('article-status').value = article.status;
+            // 加载标签
+            if (article.tags) {
+                tags = article.tags.split(',');
+                renderTags();
+            }
         })
         .catch(error => console.error('加载文章失败:', error));
     }

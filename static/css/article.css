@@ -296,3 +296,103 @@
     border: 1px solid #e3e6f0;
     border-top: none;
 }
+
+/* 1. 修复标签堆叠问题 */
+.tag-input-wrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* 允许换行，但后面会限制 badge 的布局 */
+    gap: 8px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.08); /* 如果你背景是白的，这里要调深 */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    min-height: 50px;
+}
+
+#selected-tags {
+    display: flex;
+    flex-wrap: wrap; /* 确保标签横向排列 */
+    gap: 6px;
+}
+
+.tag-badge {
+    display: inline-flex !important; /* 强制横向显示 */
+    align-items: center;
+    white-space: nowrap; /* 禁止标签内的文字换行 */
+    background: linear-gradient(135deg, #6a87c4 0%, #202e72 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    gap: 6px;
+}
+
+/* 2. 修复推荐标签看不见的问题 */
+.preset-tags-container {
+    margin-top: 15px;
+    padding: 10px;
+}
+
+.preset-label {
+    color: #666; /* 改成深色，确保白色背景可见 */
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.preset-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.preset-chip {
+    /* 这里的颜色改为有颜色的背景，或者深色文字 */
+    background: rgba(102, 126, 234, 0.1); 
+    color: #667eea; 
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    padding: 6px 14px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.preset-chip:hover {
+    background: #667eea;
+    color: white; /* 悬停时变蓝底白字 */
+    transform: translateY(-2px);
+}
+
+/* 3. 修复底部通知栏样式 */
+.notification-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+}
+
+.notification {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(-10px);
+}
+
+.notification.error {
+    background: #6947ff;
+}

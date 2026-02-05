@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 } else {
                     // 如果在其他页面，则重定向到登录页面
-                    window.location.href = 'login.html';
+                    //window.location.href = 'login.html';
                 }
             }
 
@@ -71,12 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.error('获取当前用户失败:', data.error);
                 // 如果获取当前用户失败，重定向到登录页面
-                window.location.href = 'login.html';
+                //window.location.href = 'login.html';
             }
         } catch (error) {
             console.error('获取当前用户失败:', error);
             // 如果发生错误，重定向到登录页面
-            window.location.href = 'login.html';
+            // window.location.href = 'login.html';
         }
     }
 
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
 
                     // 登录成功后重定向
-                    window.location.href = 'index.html';
+                    //window.location.href = 'index.html';
                 } else {
                     // 显示错误消息
                     const errorBox = document.createElement('div');
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'login.html';
+            //window.location.href = 'login.html';
         } catch (error) {
             console.error('退出登录失败:', error);
             alert('退出登录失败，请检查网络连接');

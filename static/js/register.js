@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     // 注册成功
                     showNotification('注册成功！请前往登录页面', 'success');
-                    window.location.href = 'login.html';
+                    setTimeout(() => smartRedirect('login.html'), 1500);
                 } else {
                     // 显示错误消息
                     showNotification(result.error || '注册失败', 'error');

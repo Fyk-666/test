@@ -15,7 +15,7 @@ function fetchUserProfile() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-        window.location.href = 'login.html';
+        smartRedirect('login.html');
         return;
     }
 
@@ -54,7 +54,7 @@ function fetchUserProfile() {
     .catch(error => {
         console.error('获取用户信息错误:', error);
         alert('无法获取用户信息，请重新登录');
-        window.location.href = 'login.html';
+        smartRedirect('login.html');
     });
 }
 

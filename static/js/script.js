@@ -87,7 +87,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
             }
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'login.html';
+            smartRedirect('login.html');
         } catch (error) {
             console.error('退出登录失败:', error);
             alert('退出登录失败，请检查网络连接');

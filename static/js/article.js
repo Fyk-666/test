@@ -25,15 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 2. 智能跳转函数 ---
-    function smartRedirect() {
-        const baseUrl = window.location.origin;
-        const pathName = window.location.pathname;
-        if (pathName.includes('/test/')) {
-            window.location.href = baseUrl + '/test/article_list';
-        } else {
-            window.location.href = baseUrl + '/article_list';
-        }
-    }
+    // 已移至 path-utils.js，这里保留兼容性
 
     // --- 3. 标签系统逻辑 ---
     let tags = [];
@@ -207,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             showNotification(articleId ? '文章更新成功' : '文章发布成功', 'success');
-            setTimeout(() => smartRedirect(), 1200);
+            setTimeout(() => smartRedirect('article_list.html'), 1200);
         })
         .catch(error => {
             console.error('操作失败:', error);

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test - 班级网站</title>
+    
+    <!-- 核心修复：使用 ../../../ 回到根目录 -->
+    <link rel="stylesheet" href="../../../static/css/style.css">
+    <link rel="stylesheet" href="../../../static/css/article.css">
+    
+    <!-- 第三方库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* 标签样式 */
+        .article-tags-box {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start; 
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 12px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .tag-pill:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: #fff;
+        }
+
+        .tag-pill i {
+            margin-right: 5px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        /* 修复 Markdown 内容过宽的问题 */
+        .article-container {
+            width: 95%;
+            max-width: 900px; /* 限制最大宽度，阅读体验更好 */
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.95); /* 稍微加深一点背景，防止文字看不清 */
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* 针对夜间模式或深色背景的适配 */
+        .markdown-body {
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container nav-container">
+            <!-- 核心修复：导航链接也要跳三级 -->
+            <a href="../../../index.html" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>班级网站</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="../../../index.html">首页</a></li>
+                <li><a href="../../../index.html#announcements">班级公告</a></li>
+                <li><a href="../../../toolbox.html">工具箱</a></li>
+                <li><a href="../../../index.html#gallery">班级相册</a></li>
+                <li><a href="../../../index.html#activities">活动安排</a></li>
+                <li><a href="#">关于我们</a></li>
+            </ul>
+            <div class="user-section">
+                <div class="user-info">
+                    <span class="user-display-name" id="usernameDisplay"></span>
+                    <span class="welcome-message" id="welcomeMessage"></span>
+                </div>
+                <div class="user-actions">
+                    <a href="../../../login.html" class="btn login-btn" id="loginBtn">登录</a>
+                    <a href="../../../register.html" class="btn register-btn" id="registerBtn">注册</a>
+                    <a href="#" class="btn logout-btn" id="logoutBtn" style="display: none;">退出</a>
+                </div>
+            </div>
+            <button class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="article-container">
+        <article>
+            <h1 id="article-title">test</h1>
+            <div class="meta">
+                <span class="author"><i class="fas fa-user"></i> admin</span>
+                <span class="date" id="article-date"><i class="far fa-calendar-alt"></i> 2026-02-10</span>
+            </div>
+            
+            
+            <div class="article-tags-box">
+                
+                    
+                        <a href="#" class="tag-pill">
+                            <i class="fas fa-hashtag"></i>随笔感悟
+                        </a>
+                    
+                
+            </div>
+            
+            
+            <div class="markdown-body" id="article-content">
+                <p>l</p>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-info">
+                <h3><i class="fas fa-graduation-cap"></i> 班级网站</h3>
+                <p>凝聚班级力量，记录成长点滴，共创美好未来</p>
+                <div class="social-icons">
+                    <a href="https://space.bilibili.com/3546617818909179"><i class="fab fa-bilibili"></i></a>
+                    <a href="https://github.com/jiugulixiaoniu/CWBS-V2.0"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>快速链接</h4>
+                <ul>
+                    <li><a href="../../../index.html">首页</a></li>
+                    <li><a href="../../../index.html#announcements">班级公告</a></li>
+                    <li><a href="../../../toolbox.html">学习资源</a></li>
+                    <li><a href="../../../index.html#gallery">班级相册</a></li>
+                    <li><a href="../../../toolbox.html">工具箱</a></li>
+                    <li><a href="#">关于我们</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>联系我们</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> starrysea2312@yeah.net</li>
+                    <li><i class="fas fa-phone"></i> none</li>
+                    <li><i class="fas fa-map-marker-alt"></i> 常熟市昆承中学</li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2023 JGL Studio. 保留所有权利</p>
+        </div>
+    </footer>
+
+    <!-- 核心修复：JS 路径也要跳三级 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="../../../static/js/auth.js"></script>
+
+</body>
+</html>

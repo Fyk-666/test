@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级私信</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* --- 主容器 --- */
+        .chat-container {
+            width: 90%; max-width: 900px; height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            display: flex;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* --- 左侧用户列表 --- */
+        .user-list-panel {
+            width: 280px;
+            background: rgba(240, 242, 245, 0.9);
+            border-right: 1px solid #ddd;
+            display: flex; flex-direction: column;
+        }
+        .panel-header {
+            padding: 20px; background: white; border-bottom: 1px solid #eee;
+        }
+        .search-box {
+            position: relative;
+            margin-top: 10px;
+        }
+        .search-box input {
+            width: 100%; padding: 8px 30px 8px 12px;
+            border: 1px solid #ddd; border-radius: 15px;
+            background: #f0f2f5; outline: none; font-size: 0.9rem;
+        }
+        .search-box i {
+            position: absolute; right: 10px; top: 9px; color: #999;
+        }
+
+        .user-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .user-item {
+            padding: 12px; margin-bottom: 5px;
+            background: white; border-radius: 12px; cursor: pointer;
+            transition: 0.2s; display: flex; align-items: center; gap: 10px;
+        }
+        .user-item:hover { background: #eef2ff; }
+        .user-item.active { background: #667eea; color: white; }
+        .user-avatar {
+            width: 40px; height: 40px; background: #ddd; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: #666; font-weight: bold; flex-shrink: 0;
+        }
+        .user-item.active .user-avatar { background: white; color: #667eea; }
+
+        /* --- 右侧聊天窗口 --- */
+        .chat-window { flex: 1; display: flex; flex-direction: column; background: white; }
+        .chat-header {
+            padding: 15px 20px; border-bottom: 1px solid #eee;
+            font-weight: bold; font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10;
+        }
+        
+        .messages-area {
+            flex: 1; padding: 15px; overflow-y: auto;
+            background: #f5f6fa; 
+            display: flex; flex-direction: column; 
+            gap: 4px; /* 减小气泡之间的垂直间距 */
+        }
+
+        /* --- 日期分割线 --- */
+        .date-divider {
+            text-align: center; margin: 15px 0;
+        }
+        .date-divider span {
+            background: rgba(0,0,0,0.1); color: white;
+            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem;
+        }
+
+        /* --- 气泡通用样式 --- */
+        .message-bubble {
+            max-width: 80%; 
+            padding: 8px 12px; 
+            border-radius: 12px;
+            font-size: 0.95rem; 
+            line-height: 1.4; 
+            position: relative;
+            word-wrap: break-word; 
+            /* 删除这里的 white-space: pre-wrap; */
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+
+        .msg-content-text {
+            white-space: pre-wrap; /* 仅让消息文字支持换行 */
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* 复制按钮 (仅悬停显示) */
+        .copy-btn {
+            position: absolute;
+            top: -20px; /* 浮在气泡上方 */
+            right: 10px;
+            opacity: 0;
+            pointer-events: none;
+            background: #333;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            transition: 0.2s;
+        }
+        .message-bubble:hover .copy-btn {
+            opacity: 1;
+            pointer-events: auto;
+            top: -25px; /* 悬停时往上飘一点 */
+        }
+        /* 左侧消息 */
+        .msg-left {
+            align-self: flex-start; background: #ffffff; color: #333;
+            border-bottom-left-radius: 2px;
+        }
+        .msg-left .copy-btn { right: -40px; top: 50%; transform: translateY(-50%); }
+
+        /* 右侧消息 */
+        .msg-right {
+            align-self: flex-end; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-bottom-right-radius: 2px;
+        }
+        .msg-right .copy-btn { left: -40px; top: 50%; transform: translateY(-50%); }
+
+        /* 消息元数据 (时间 + 状态) */
+        .msg-meta {
+            display: flex; align-items: center; justify-content: flex-end;
+            gap: 4px; margin-top: 2px; font-size: 0.97rem;
+        }
+        .msg-left .msg-meta { color: #999; justify-content: flex-start; }
+        .msg-right .msg-meta { color: rgba(255,255,255,0.8); }
+
+        .msg-time { cursor: pointer; border-bottom: 1px dotted transparent; }
+        .msg-time:hover { border-bottom-color: currentColor; }
+
+        /* 状态图标 */
+        .msg-status { font-size: 0.7rem; }
+        .msg-status.read { color: #54a0ff; } /* 已读蓝色 */
+        .msg-status.sent { color: rgba(255,255,255,0.7); } /* 发送成功灰色 */
+        
+        .retry-btn {
+            color: #ff4757; cursor: pointer; font-weight: bold; margin-right: 5px;
+            background: white; padding: 2px 6px; border-radius: 4px;
+        }
+
+        /* --- 智能输入框区域 --- */
+        .input-area {
+            padding: 15px 20px; border-top: 1px solid #eee; background: white;
+            display: flex; gap: 12px; align-items: flex-end;
+        }
+        
+        .textarea-wrapper {
+            flex: 1; background: #f0f2f5; border-radius: 20px;
+            padding: 10px 15px; border: 1px solid transparent;
+            transition: 0.3s;
+        }
+        .textarea-wrapper:focus-within { background: white; border-color: #667eea; }
+
+        #msgInput {
+            width: 100%; border: none; background: transparent; outline: none;
+            resize: none; font-family: inherit; font-size: 1rem; line-height: 1.4;
+            max-height: 120px; overflow-y: auto; display: block;
+        }
+
+        #sendBtn {
+            width: 45px; height: 45px; border-radius: 50%; border: none;
+            background: #667eea; color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+        #sendBtn:hover { transform: scale(1.1); background: #5a6fd6; }
+        #sendBtn:active { transform: scale(0.95); }
+        #sendBtn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        .back-home {
+            position: absolute; top: 20px; left: 20px;
+            color: white; text-decoration: none; font-weight: bold;
+            background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <a href="/index.html" class="back-home"><i class="fas fa-arrow-left"></i> 返回首页</a>
+
+    <div class="chat-container">
+        <!-- 左侧列表 -->
+        <div class="user-list-panel">
+            <div class="panel-header">
+                <div style="font-size:1.2rem; color:#667eea; font-weight:bold;">
+                    <i class="fas fa-comments"></i> 班级通讯录
+                </div>
+                <div class="search-box">
+                    <input type="text" id="userSearch" placeholder="搜索联系人...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="user-list" id="userList">
+                <div style="padding:20px; text-align:center; color:#999;">
+                    <i class="fas fa-spinner fa-spin"></i> 加载中...
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧聊天 -->
+        <div class="chat-window">
+            <div class="chat-header" id="chatHeader">请选择联系人</div>
+            
+            <div class="messages-area" id="msgArea">
+                <div style="text-align:center; margin-top:50px; color:#ccc;">
+                    <i class="fas fa-paper-plane" style="font-size:3rem; margin-bottom:10px;"></i>
+                    <p>选择左侧好友开始聊天</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="textarea-wrapper">
+                    <textarea id="msgInput" rows="1" placeholder="输入消息 (Shift+Enter 换行)..." disabled></textarea>
+                </div>
+                <button id="sendBtn" disabled><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://kczx.pythonanywhere.com/api";
+        let currentReceiverId = null;
+        let refreshTimer = null;
+        let myId = null; 
+        let allUsers = []; // 存储所有用户数据用于搜索
+
+        // --- 工具函数 ---
+        function parseJwt(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            } catch (e) { return null; }
+        }
+
+        // --- 1. 初始化 ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("请先登录");
+                window.location.href = '/login.html'; 
+                return;
+            }
+            
+            const user = parseJwt(token);
+            if (user) myId = user.user_id; 
+            await loadUserList();
+
+            // 搜索框事件
+            document.getElementById('userSearch').addEventListener('input', (e) => {
+                renderUserList(e.target.value.trim());
+            });
+
+            // 智能输入框高度自适应
+            const textarea = document.getElementById('msgInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if(this.value === '') this.style.height = 'auto';
+            });
+            
+            // 监听键盘事件 (Enter 发送, Shift+Enter 换行)
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+
+        // --- 2. 加载用户列表 ---
+        async function loadUserList() {
+            try {
+                const res = await fetch(`${API_BASE}/members`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                
+                if (!res.ok) throw new Error("无法获取成员列表");
+                const data = await res.json();
+                allUsers = data.users || data; // 保存全局数据
+                renderUserList(); // 初始渲染
+            } catch (e) {
+                console.error(e);
+                document.getElementById('userList').innerHTML = '<div style="padding:20px;text-align:center;">加载失败</div>';
+            }
+        }
+
+        // 渲染用户列表 (支持搜索过滤)
+        function renderUserList(keyword = '') {
+            const listContainer = document.getElementById('userList');
+            listContainer.innerHTML = '';
+
+            const filteredUsers = allUsers.filter(user => {
+                // 排除自己，并匹配关键词
+                if (String(user.id) === String(myId)) return false;
+                const name = user.display_name || user.username;
+                return name.toLowerCase().includes(keyword.toLowerCase());
+            });
+
+            if (filteredUsers.length === 0) {
+                listContainer.innerHTML = '<div style="padding:20px;text-align:center;color:#ccc">无匹配用户</div>';
+                return;
+            }
+
+            filteredUsers.forEach(user => {
+                const displayName = user.display_name || user.username;
+                const div = document.createElement('div');
+                div.className = `user-item ${currentReceiverId === user.id ? 'active' : ''}`;
+                div.innerHTML = `
+                    <div class="user-avatar">${displayName[0].toUpperCase()}</div>
+                    <div>
+                        <div style="font-weight:600;">${displayName}</div>
+                        <div style="font-size:0.75rem; color:#999;">${getLevelName(user.level)}</div>
+                    </div>
+                `;
+                div.onclick = () => selectUser(user.id, displayName, div);
+                listContainer.appendChild(div);
+            });
+        }
+
+        function getLevelName(level) {
+            const map = {1:'访客', 2:'用户', 3:'管理员', 4:'系统管理', 5:'超级管理'};
+            return map[level] || '用户';
+        }
+
+        // --- 3. 选择聊天对象 ---
+        function selectUser(userId, userName, element) {
+            currentReceiverId = userId;
+            document.getElementById('chatHeader').innerText = `正在与 ${userName} 聊天`;
+            
+            // 重新渲染列表以更新 active 状态（如果正在搜索，保持搜索结果）
+            const keyword = document.getElementById('userSearch').value;
+            renderUserList(keyword);
+
+            const msgInput = document.getElementById('msgInput');
+            msgInput.disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            msgInput.focus();
+
+            loadMessages();
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(loadMessages, 3000); 
+        }
+
+        // --- 4. 智能时间处理 ---
+        function formatTimeDisplay(dateString, type = 'smart') {
+            const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            // 绝对时间 (HH:mm)
+            const absoluteTime = date.toLocaleTimeString('zh-CN', {
+                timeZone: 'Asia/Shanghai', hour12: false, hour: '2-digit', minute: '2-digit'
+            });
+
+            if (type === 'absolute') return absoluteTime;
+
+            // 相对时间
+            if (diffMins < 1) return '刚刚';
+            if (diffMins < 60) return `${diffMins}分钟前`;
+            return absoluteTime;
+        }
+
+        function toggleTime(element, dateString) {
+            const currentText = element.innerText;
+            if (currentText.includes('前') || currentText === '刚刚') {
+                element.innerText = formatTimeDisplay(dateString, 'absolute');
+            } else {
+                element.innerText = formatTimeDisplay(dateString, 'smart');
+            }
+        }
+
+        // --- 5. 加载消息历史 (含日期分组) ---
+        async function loadMessages() {
+            if (!currentReceiverId) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/messages/history/${currentReceiverId}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const msgs = await res.json();
+                
+                const msgArea = document.getElementById('msgArea');
+                // 简单对比防闪烁 (实际项目应用更复杂的 diff)
+                if (msgArea.getAttribute('data-count') == msgs.length) return;
+                
+                msgArea.innerHTML = '';
+                msgArea.setAttribute('data-count', msgs.length);
+
+                let lastDateStr = '';
+
+                msgs.forEach(msg => {
+                    const isMe = (msg.sender_id == myId);
+                    const msgDate = new Date(msg.created_at.endsWith('Z') ? msg.created_at : msg.created_at + 'Z');
+                    const dateStr = msgDate.toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'});
+
+                    // 1. 插入日期分割线
+                    if (dateStr !== lastDateStr) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'date-divider';
+                        const todayStr = new Date().toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'});
+                        dateDiv.innerHTML = `<span>${dateStr === todayStr ? '今天' : dateStr}</span>`;
+                        msgArea.appendChild(dateDiv);
+                        lastDateStr = dateStr;
+                    }
+
+                    // 2. 构建消息气泡
+                    const bubble = document.createElement('div');
+                    bubble.className = `message-bubble ${isMe ? 'msg-right' : 'msg-left'}`;
+                    
+                    // 状态图标 (右侧自己发送的消息才显示)
+                    const statusIcon = msg.is_read 
+                        ? '<i class="fas fa-check-double msg-status read"></i>' 
+                        : '<i class="fas fa-check msg-status sent"></i>';
+                    
+                    /**
+                     * 核心修复说明：
+                     * 1. 将模板字符串内的 HTML 标签合并到一行，防止 CSS 的 pre-wrap 捕捉到代码缩进的换行。
+                     * 2. 使用 msg-content-text 包裹消息内容，以便仅对文字内容应用换行保护。
+                     */
+                    bubble.innerHTML = `<div class="copy-btn" onclick="copyText(this)">复制</div><div class="msg-content-text">${msg.content}</div><div class="msg-meta"><span class="msg-time" onclick="toggleTime(this, '${msg.created_at}')">${formatTimeDisplay(msg.created_at, 'absolute')}</span>${isMe ? statusIcon : ''}</div>`;
+                    
+                    msgArea.appendChild(bubble);
+                });
+                msgArea.scrollTop = msgArea.scrollHeight;
+
+            } catch (e) {
+                console.error("加载消息失败", e);
+            }
+        }
+
+        // --- 6. 复制功能 ---
+        function copyText(btnElement) {
+            // 找到同级的文本内容 div
+            const text = btnElement.nextElementSibling.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = '已复制';
+                setTimeout(() => btnElement.innerText = originalText, 1000);
+            });
+        }
+
+        // --- 7. 发送消息 (含重试逻辑) ---
+        async function sendMessage(retryContent = null) {
+            const input = document.getElementById('msgInput');
+            const content = retryContent || input.value.trim();
+            if (!content || !currentReceiverId) return;
+
+            if (!retryContent) input.value = ''; // 正常发送清空输入框
+            input.style.height = 'auto'; // 重置高度
+
+            // 乐观更新：先显示“发送中”气泡
+            const msgArea = document.getElementById('msgArea');
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'message-bubble msg-right';
+            tempDiv.innerHTML = `
+                <div>${content}</div>
+                <div class="msg-meta">
+                    <span class="msg-time">发送中...</span>
+                    <i class="fas fa-spinner fa-spin msg-status"></i>
+                </div>
+            `;
+            msgArea.appendChild(tempDiv);
+            msgArea.scrollTop = msgArea.scrollHeight;
+
+            try {
+                const res = await fetch(`${API_BASE}/messages/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({
+                        receiver_id: currentReceiverId,
+                        content: content
+                    })
+                });
+
+                if (res.ok) {
+                    loadMessages(); // 成功后刷新
+                    tempDiv.remove(); // 移除临时气泡
+                } else {
+                    throw new Error('发送失败');
+                }
+            } catch (e) {
+                // 发送失败处理
+                tempDiv.innerHTML = `
+                    <div>${content}</div>
+                    <div class="msg-meta" style="color:#ff4757">
+                        <span class="retry-btn" onclick="retrySend(this, '${content.replace(/'/g, "\\'")}')">重试</span>
+                        <span>发送失败</span>
+                    </div>
+                `;
+            }
+        }
+
+        function retrySend(btn, content) {
+            // 移除当前失败的气泡，重新调用发送
+            const bubble = btn.closest('.message-bubble');
+            bubble.remove();
+            sendMessage(content);
+        }
+    </script>
+</body>
+</html>

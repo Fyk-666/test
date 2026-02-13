@@ -1,52 +1,40 @@
-/* static/css/pomodoro.css */
+/* ====================================
+ * 番茄钟页面样式 - 统一玻璃拟态风格
+ * ==================================== */
+
+/* 引入统一变量 */
 :root {
-    --primary-color: #4e73df;
-    --secondary-color: #6f42c1;
-    --accent-color: #36b9cc;
-    --success-color: #1cc88a;
-    --warning-color: #f6c23e;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #667eea;
+    --primary-dark: #5a6fd6;
+    --secondary-color: #764ba2;
+    --accent-color: #a855f7;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
     --danger-color: #e74a3b;
-    --light-color: #f8f9fc;
-    --dark-color: #5a5c69;
-    --gray-color: #858796;
-    --background-color: #ffffff;
-    --text-color: #333333;
-    --card-background: #f8f9fc;
-    --button-color: #4e73df;
-    --button-hover-color: #3a56c4;
-    --progress-color: #1cc88a;
-}
-
-/* 深色模式变量 */
-.dark-mode {
-    --background-color: #212529;
-    --text-color: #eaf2f8;
-    --card-background: #2c3238;
-    --button-color: #5a6268;
-    --button-hover-color: #444a50;
-    --progress-color: #66fcf1;
-}
-
-/* 渐变模式变量 */
-.gradient-mode {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
-}
-
-.gradient-mode .container {
-    background: white;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-border-hover: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --glass-blur: blur(12px);
+    --border-radius-sm: 10px;
+    --border-radius-md: 15px;
+    --border-radius-lg: 20px;
+    --transition-normal: 0.3s ease;
+    --progress-color: var(--success-color);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-    background: var(--background-color);
-    color: var(--text-color);
+    background: var(--primary-gradient);
+    color: white;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -54,33 +42,56 @@ body {
     padding: 20px;
 }
 
+/* 装饰背景 */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    animation: float 20s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-3%, -3%); }
+}
+
 .container {
     width: 100%;
-    max-width: 1300px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+    max-width: 800px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--glass-shadow);
+    padding: 40px;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 header h1 {
     display: flex;
     align-items: center;
-    color: var(--primary-color);
+    color: white;
+    font-size: 1.8rem;
 }
 
 header h1 i {
-    margin-right: 10px;
+    margin-right: 12px;
 }
 
 .mode-toggle {
@@ -89,120 +100,176 @@ header h1 i {
 }
 
 .mode-toggle button {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    border: none;
-    background: var(--card-background);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-color);
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.8);
+    transition: var(--transition-normal);
 }
 
-.mode-toggle button.active {
-    background: var(--primary-color);
+.mode-toggle button:hover {
+    background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
+.mode-toggle button.active {
+    background: white;
+    color: var(--secondary-color);
+    border-color: white;
+}
+
+/* 计时器容器 */
 .timer-container {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .timer-display {
-    font-size: 20rem; /* 增大字体尺寸 */
+    font-size: 8rem;
     font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--primary-color);
+    margin-bottom: 30px;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    letter-spacing: 5px;
+    font-variant-numeric: tabular-nums;
 }
 
+/* 计时器控制按钮 */
 .timer-controls {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .timer-controls button {
-    padding: 12px 25px;
+    padding: 14px 35px;
     border: none;
-    border-radius: 8px;
-    background: var(--button-color);
-    color: white;
-    font-weight: 500;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
 }
 
-.timer-controls button:hover {
-    background: var(--button-hover-color);
+.timer-controls button:first-child {
+    background: white;
+    color: var(--secondary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.timer-controls button:first-child:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.timer-controls button:nth-child(2) {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.timer-controls button:nth-child(2):hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .timer-controls button:disabled {
-    background: #cccccc;
+    background: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
+    transform: none;
 }
 
+/* 计时器设置 */
 .timer-settings {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
+    gap: 20px;
+    margin-bottom: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .setting {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .setting label {
     flex: 1;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
 }
 
-.setting input {
+.setting input[type="range"] {
     flex: 2;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.setting input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .setting span {
     flex: 1;
     text-align: right;
-    font-weight: 500;
-    color: var(--primary-color);
+    font-weight: 600;
+    color: white;
+    min-width: 50px;
 }
 
+/* 进度条 */
 .progress-container {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .progress-bar {
-    height: 10px;
-    background: #e9ecef;
-    border-radius: 5px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 #progress {
     height: 100%;
-    background: var(--progress-color);
+    background: linear-gradient(90deg, var(--success-color), var(--accent-color));
     width: 0%;
     transition: width 0.1s linear;
+    border-radius: 4px;
 }
 
 .progress-info {
     text-align: center;
-    color: var(--gray-color);
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
 }
 
+/* 统计信息 */
 .statistics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 20px;
 }
 
@@ -210,33 +277,42 @@ header h1 i {
     display: flex;
     align-items: center;
     gap: 15px;
-    background: var(--card-background);
-    padding: 15px;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 18px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-normal);
+}
+
+.stat:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .stat i {
-    font-size: 1.5rem;
-    color: var(--primary-color);
+    font-size: 1.8rem;
+    color: white;
 }
 
 .stat-info span {
     display: block;
-    color: var(--gray-color);
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    margin-bottom: 4px;
 }
 
 .stat-info h3 {
     font-size: 1.5rem;
-    color: var(--primary-color);
+    color: white;
 }
 
+/* 页脚 */
 footer {
     text-align: center;
-    margin-top: 30px;
+    margin-top: 40px;
     padding-top: 20px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    color: var(--gray-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 /* 全屏模式 */
@@ -250,8 +326,9 @@ body.fullscreen .container {
     left: 0;
     width: 100%;
     height: 100%;
+    max-width: none;
     border-radius: 0;
-    padding: 40px;
+    padding: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -260,141 +337,103 @@ body.fullscreen .container {
 
 body.fullscreen header {
     position: absolute;
-    top: 20px;
+    top: 30px;
     left: 0;
     right: 0;
-    padding: 0 40px;
+    padding: 0 50px;
     margin-bottom: 0;
-    padding-bottom: 10px;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 body.fullscreen .timer-display {
-    font-size: 8rem; /* 全屏模式下进一步增大字体 */
-    margin-bottom: 30px;
+    font-size: 15vw;
+    margin-bottom: 50px;
 }
 
 body.fullscreen .timer-controls {
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+}
+
+body.fullscreen .timer-controls button {
+    padding: 18px 50px;
+    font-size: 1.2rem;
 }
 
 body.fullscreen .timer-settings {
     position: absolute;
-    bottom: 200px;
-    left: 40px;
-    right: 40px;
+    bottom: 250px;
+    left: 50px;
+    right: 50px;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 body.fullscreen .progress-container {
     position: absolute;
-    bottom: 100px;
-    left: 40px;
-    right: 40px;
+    bottom: 120px;
+    left: 50px;
+    right: 50px;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 body.fullscreen .statistics {
     position: absolute;
-    top: 150px;
-    right: 40px;
-    width: 300px;
+    top: 120px;
+    right: 50px;
+    width: auto;
+    max-width: 400px;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
     .container {
-        padding: 20px;
+        padding: 25px;
     }
 
     .timer-display {
-        font-size: 4rem;
+        font-size: 5rem;
+    }
+
+    .timer-controls {
+        flex-wrap: wrap;
     }
 
     .timer-controls button {
-        padding: 10px 20px;
-        font-size: 0.9rem;
+        padding: 12px 25px;
+        font-size: 0.95rem;
     }
 
     .statistics {
         grid-template-columns: 1fr;
     }
 
-    body.fullscreen {
-        padding: 20px;
+    header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    body.fullscreen .container {
+        padding: 30px 20px;
+    }
+
+    body.fullscreen header {
+        padding: 0 20px;
     }
 
     body.fullscreen .timer-display {
-        font-size: 6rem;
+        font-size: 12vw;
     }
-}
-body.fullscreen {
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-body.fullscreen .container {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    border-radius: 0;
-    padding: 40px 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
+    body.fullscreen .timer-settings,
+    body.fullscreen .progress-container {
+        left: 20px;
+        right: 20px;
+    }
 
-body.fullscreen header {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 40px;
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-body.fullscreen .timer-display {
-    font-size: 25vw; /* 全屏模式下进一步增大字体，使用视口宽度的百分比 */
-    margin-bottom: 40px;
-}
-
-body.fullscreen .timer-controls {
-    margin-bottom: 40px;
-}
-
-body.fullscreen .timer-settings {
-    position: absolute;
-    bottom: 200px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 0 20px;
-}
-
-body.fullscreen .progress-container {
-    position: absolute;
-    bottom: 100px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-}
-
-body.fullscreen .statistics {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    display: flex;
-    gap: 20px;
-    padding: 0 20px;
+    body.fullscreen .statistics {
+        position: static;
+        margin-top: 30px;
+    }
 }

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章专栏</title>
+    <title>文章专栏 - 班级网站</title>
     <!-- 必须引入 FontAwesome 图标库，否则专栏图标不显示 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
     <style>
         /* --- 全局样式 --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,19 +18,18 @@
             color: white;
             display: flex;
             flex-direction: column;
-            align-items: center;
         }
 
-        .container { width: 95%; max-width: 1200px; margin-top: 60px; padding-bottom: 50px; }
+        .container { width: 95%; max-width: 1200px; margin: 0 auto; padding-bottom: 50px; position: relative; z-index: 1; }
         
         .header-title { 
-            text-align: center; font-size: 3.5rem; font-weight: bold; 
-            letter-spacing: 5px; margin-bottom: 40px; 
+            text-align: center; font-size: 3rem; font-weight: bold; 
+            letter-spacing: 5px; margin: 60px 0 40px; 
             text-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         /* --- 顶部按钮 --- */
-        .action-bar { display: flex; justify-content: center; gap: 30px; margin-bottom: 60px; }
+        .action-bar { display: flex; justify-content: center; gap: 30px; margin-bottom: 50px; }
         
         .btn { 
             padding: 12px 35px; font-size: 1.1rem; font-weight: bold; 
@@ -42,7 +42,7 @@
 
         /* --- 专栏布局样式 --- */
         .category-section {
-            margin-bottom: 60px;
+            margin-bottom: 50px;
             animation: fadeIn 0.6s ease;
         }
 
@@ -120,6 +120,37 @@
 </head>
 <body>
 
+    <!-- 导航栏 -->
+    <nav>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>班级网站</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="article_list.html" class="active">班级公告</a></li>
+                <li><a href="toolbox.html">工具箱</a></li>
+                <li><a href="article.html">发文章</a></li>
+                <li><a href="#">班级相册</a></li>
+            </ul>
+            <div class="user-section">
+                <div class="user-info">
+                    <span class="user-display-name" id="usernameDisplay"></span>
+                    <span class="welcome-message" id="welcomeMessage"></span>
+                </div>
+                <div class="user-actions">
+                    <a href="login.html" class="btn login-btn" id="loginBtn">登录</a>
+                    <a href="register.html" class="btn register-btn" id="registerBtn">注册</a>
+                    <a href="#" class="btn logout-btn" id="logoutBtn" style="display: none;">退出</a>
+                </div>
+            </div>
+            <button class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
     <div class="container">
         <h1 class="header-title">文章专栏</h1>
 
@@ -134,6 +165,45 @@
         <div id="columns-container"></div>
     </div>
 
+    <!-- 页脚 -->
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-info">
+                <h3><i class="fas fa-graduation-cap"></i> 班级网站</h3>
+                <p>凝聚班级力量，记录成长点滴，共创美好未来</p>
+                <div class="social-icons">
+                    <a href="https://space.bilibili.com/3546617818909179"><i class="fab fa-bilibili"></i></a>
+                    <a href="https://github.com/jiugulixiaoniu/Class-website"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h4>快速链接</h4>
+                <ul>
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="article_list.html">班级公告</a></li>
+                    <li><a href="toolbox.html">工具箱</a></li>
+                    <li><a href="article.html">发文章</a></li>
+                    <li><a href="#">班级相册</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact">
+                <h4>联系我们</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> none</li>
+                    <li><i class="fas fa-phone"></i> none</li>
+                    <li><i class="fas fa-map-marker-alt"></i> 常熟市昆承中学</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2023 JGL Studio. 保留所有权利</p>
+        </div>
+    </footer>
+
+    <script src="static/js/auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- 1. 基础配置 ---
@@ -143,8 +213,8 @@
             // 智能识别当前路径 (GitHub Pages 兼容)
             const prefix = window.location.pathname.includes('/test/') ? '/test' : '';
             
-            if (publishBtn) publishBtn.href = prefix ? prefix + '/article.html' : 'article.html'; 
-            if (myArticlesBtn) myArticlesBtn.href = prefix ? prefix + '/my_articles.html' : 'my_articles.html'; 
+            if (publishBtn) publishBtn.href = prefix + '/article'; 
+            if (myArticlesBtn) myArticlesBtn.href = prefix + '/my_articles'; 
             
             // --- 2. 专栏配置 (Tag -> 专栏映射) ---
             // tag: 必须与你发布时的标签一致

@@ -5,27 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户简介 - 班级网站</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../static/css/userhome.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/userhome.css">
 </head>
 <body>
-    <!-- 顶部导航栏 -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="#" class="logo">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>班级网站</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="#" class="active">首页</a>
-                    <a href="#">公告</a>
-                    <a href="#">资源</a>
-                    <a href="#">活动</a>
-                    <a href="#">成员</a>
-                </nav>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>班级网站</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="article_list.html">班级公告</a></li>
+                <li><a href="toolbox.html">工具箱</a></li>
+                <li><a href="article.html">发文章</a></li>
+                <li><a href="#">班级相册</a></li>
+            </ul>
+            <div class="user-section">
+                <div class="user-info">
+                    <span class="user-display-name" id="usernameDisplay"></span>
+                    <span class="welcome-message" id="welcomeMessage"></span>
+                </div>
+                <div class="user-actions">
+                    <a href="login.html" class="btn login-btn" id="loginBtn">登录</a>
+                    <a href="register.html" class="btn register-btn" id="registerBtn">注册</a>
+                    <a href="#" class="btn logout-btn" id="logoutBtn" style="display: none;">退出</a>
+                </div>
             </div>
+            <button class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
-    </header>
+    </nav>
 
     <!-- 主要内容区域 -->
     <section class="profile-section">
@@ -117,21 +130,45 @@
     </section>
 
     <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2023 班级网站 - 凝聚力量，共创未来</p>
-                <div class="footer-links">
-                    <a href="#">关于我们</a>
-                    <a href="#">使用条款</a>
-                    <a href="#">隐私政策</a>
-                    <a href="#">联系我们</a>
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-info">
+                <h3><i class="fas fa-graduation-cap"></i> 班级网站</h3>
+                <p>凝聚班级力量，记录成长点滴，共创美好未来</p>
+                <div class="social-icons">
+                    <a href="https://space.bilibili.com/3546617818909179"><i class="fab fa-bilibili"></i></a>
+                    <a href="https://github.com/jiugulixiaoniu/Class-website"><i class="fab fa-github"></i></a>
                 </div>
             </div>
+
+            <div class="footer-links">
+                <h4>快速链接</h4>
+                <ul>
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="article_list.html">班级公告</a></li>
+                    <li><a href="toolbox.html">工具箱</a></li>
+                    <li><a href="article.html">发文章</a></li>
+                    <li><a href="#">班级相册</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact">
+                <h4>联系我们</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> none</li>
+                    <li><i class="fas fa-phone"></i> none</li>
+                    <li><i class="fas fa-map-marker-alt"></i> 常熟市昆承中学</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2023 JGL Studio. 保留所有权利</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="static/js/auth.js"></script>
     <script src="static/js/userhome.js"></script>
 </body>
 </html>

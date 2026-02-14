@@ -143,8 +143,8 @@
             // 智能识别当前路径 (GitHub Pages 兼容)
             const prefix = window.location.pathname.includes('/test/') ? '/test' : '';
             
-            if (publishBtn) publishBtn.href = prefix + '/article'; 
-            if (myArticlesBtn) myArticlesBtn.href = prefix + '/my_articles'; 
+            if (publishBtn) publishBtn.href = prefix ? prefix + '/article.html' : 'article.html'; 
+            if (myArticlesBtn) myArticlesBtn.href = prefix ? prefix + '/my_articles.html' : 'my_articles.html'; 
             
             // --- 2. 专栏配置 (Tag -> 专栏映射) ---
             // tag: 必须与你发布时的标签一致

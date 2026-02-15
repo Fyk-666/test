@@ -2,19 +2,19 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Dino Runner</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #0a0a0f;
-            --bg-gradient: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            --bg-mid: #12121a;
             --neon-green: #00ff88;
             --neon-pink: #ff2a6d;
             --neon-blue: #05d9e8;
             --neon-orange: #ff6b35;
-            --panel-bg: rgba(10, 10, 15, 0.9);
-            --border-glow: 0 0 20px var(--neon-green), 0 0 40px rgba(0, 255, 136, 0.3);
+            --neon-purple: #b537f2;
+            --panel-bg: rgba(10, 10, 15, 0.95);
         }
 
         * {
@@ -22,6 +22,14 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
@@ -29,15 +37,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: var(--bg-gradient);
+            background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #16213e 100%);
             font-family: 'Space Mono', monospace;
-            overflow-x: hidden;
             color: white;
             position: relative;
+            touch-action: manipulation;
         }
 
-        /* 背景网格动画 */
+        /* 动态背景网格 */
         .grid-bg {
             position: fixed;
             top: 0;
@@ -47,131 +54,271 @@
             background-image: 
                 linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
+            background-size: 60px 60px;
+            animation: gridScroll 25s linear infinite;
             pointer-events: none;
             z-index: 0;
         }
 
-        @keyframes gridMove {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        @keyframes gridScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(60px); }
         }
 
+        /* 游戏主容器 */
         .game-wrapper {
             position: relative;
             z-index: 10;
-        }
-
-        /* 游戏容器 */
-        #game-container {
-            position: relative;
-            border-radius: 4px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 4px;
-            box-shadow: var(--border-glow);
-            border: 2px solid var(--neon-green);
-            transition: box-shadow 0.3s, filter 0.3s;
-        }
-
-        #game-container.paused {
-            box-shadow: 0 0 20px var(--neon-orange), 0 0 40px rgba(255, 107, 53, 0.3);
-            border-color: var(--neon-orange);
-            filter: brightness(0.7);
-        }
-
-        #game-container.game-over {
-            box-shadow: 0 0 20px var(--neon-pink), 0 0 40px rgba(255, 42, 109, 0.3);
-            border-color: var(--neon-pink);
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(10px); }
-            60% { transform: translateX(-10px); }
-            80% { transform: translateX(10px); }
-        }
-
-        #game-canvas {
-            display: block;
-            background: transparent;
-            image-rendering: pixelated;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px;
+            width: 100%;
+            max-width: 900px;
         }
 
         /* 标题 */
         .game-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: clamp(28px, 5vw, 48px);
+            font-size: clamp(24px, 6vw, 42px);
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
-            margin-bottom: 20px;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
             background: linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-pink));
             background-size: 200% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: titleShift 3s ease-in-out infinite;
+            animation: gradientMove 4s ease-in-out infinite;
         }
 
-        @keyframes titleShift {
+        @keyframes gradientMove {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
+        }
+
+        /* 游戏画布容器 */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 8px;
+            border: 2px solid var(--neon-green);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 136, 0.3),
+                0 0 60px rgba(0, 255, 136, 0.1),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        #game-container.paused {
+            border-color: var(--neon-orange);
+            box-shadow: 
+                0 0 20px rgba(255, 107, 53, 0.4),
+                0 0 60px rgba(255, 107, 53, 0.15);
+            filter: brightness(0.7) saturate(0.8);
+        }
+
+        #game-container.game-over {
+            border-color: var(--neon-pink);
+            box-shadow: 
+                0 0 20px rgba(255, 42, 109, 0.4),
+                0 0 60px rgba(255, 42, 109, 0.15);
+            animation: containerShake 0.5s ease-out;
+        }
+
+        @keyframes containerShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: transparent;
+            image-rendering: pixelated;
+            border-radius: 4px;
+        }
+
+        /* 游戏内 HUD */
+        .hud {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            text-align: right;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .hud-label {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hud-score {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(20px, 5vw, 36px);
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 20px var(--neon-green);
+            line-height: 1;
+        }
+
+        .hud-high {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(10px, 2.5vw, 14px);
+            color: var(--neon-pink);
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        /* 开始提示 */
+        .start-overlay {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            text-align: center;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .start-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(12px, 3vw, 16px);
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: textPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.98); }
+        }
+
+        .game-over-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(14px, 3.5vw, 18px);
+            color: var(--neon-pink);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* 设置按钮 (齿轮图标) */
+        .settings-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 200;
+            transition: all 0.3s ease;
+        }
+
+        .settings-toggle:hover {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .settings-toggle:active {
+            transform: scale(0.9);
+        }
+
+        .settings-toggle svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--neon-green);
+            transition: transform 0.5s ease;
+        }
+
+        .settings-toggle.active svg {
+            transform: rotate(180deg);
+            fill: var(--neon-pink);
         }
 
         /* 控制面板 */
         #control-panel {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100%;
             background: var(--panel-bg);
-            padding: 24px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            backdrop-filter: blur(10px);
-            width: 260px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            z-index: 100;
+            border-left: 1px solid rgba(0, 255, 136, 0.2);
+            backdrop-filter: blur(20px);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        #control-panel.open {
+            transform: translateX(0);
+        }
+
+        .panel-header {
+            padding: 70px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .panel-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            margin-bottom: 20px;
             color: var(--neon-blue);
             text-transform: uppercase;
             letter-spacing: 3px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(5, 217, 232, 0.3);
+        }
+
+        .panel-content {
+            padding: 20px;
+            flex: 1;
         }
 
         .control-group {
-            margin-bottom: 18px;
+            margin-bottom: 24px;
         }
 
         .control-label {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.6);
+            align-items: center;
+            font-size: 10px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .control-value {
+            font-family: 'Orbitron', sans-serif;
             color: var(--neon-green);
             font-weight: 700;
         }
 
         input[type="range"] {
             width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
             cursor: pointer;
@@ -179,44 +326,46 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             background: var(--neon-green);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px var(--neon-green);
-            transition: transform 0.2s;
+            box-shadow: 0 0 15px var(--neon-green);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+            transform: scale(1.15);
+            box-shadow: 0 0 25px var(--neon-green);
         }
 
-        .btn-group {
+        .btn-row {
             display: flex;
             gap: 10px;
-            margin-top: 24px;
+            margin-top: 30px;
         }
 
         .btn {
             flex: 1;
-            padding: 12px 16px;
+            padding: 14px 12px;
             background: transparent;
             border: 1px solid var(--neon-blue);
+            border-radius: 6px;
             color: var(--neon-blue);
             font-family: 'Orbitron', sans-serif;
             font-size: 10px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.25s ease;
         }
 
         .btn:hover {
             background: var(--neon-blue);
             color: var(--bg-deep);
-            box-shadow: 0 0 20px rgba(5, 217, 232, 0.5);
+            box-shadow: 0 0 20px rgba(5, 217, 232, 0.4);
         }
 
         .btn:active {
@@ -228,13 +377,7 @@
             color: var(--neon-orange);
         }
 
-        .btn.pause-btn:hover {
-            background: var(--neon-orange);
-            color: var(--bg-deep);
-            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
-        }
-
-        .btn.pause-btn.active {
+        .btn.pause-btn:hover, .btn.pause-btn.active {
             background: var(--neon-orange);
             color: var(--bg-deep);
         }
@@ -247,102 +390,145 @@
         .btn.restart-btn:hover {
             background: var(--neon-pink);
             color: var(--bg-deep);
-            box-shadow: 0 0 20px rgba(255, 42, 109, 0.5);
         }
 
-        /* 分数显示 */
-        .score-display {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            text-align: right;
-            z-index: 50;
+        /* 移动端控制按钮 */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            z-index: 100;
         }
 
-        .score-label {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .score-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--neon-green);
-            text-shadow: 0 0 20px var(--neon-green);
-        }
-
-        .high-score {
-            font-size: 12px;
-            color: var(--neon-pink);
-            margin-top: 4px;
-        }
-
-        /* 开始提示 */
-        .start-prompt {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            color: var(--neon-blue);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            animation: blink 1.5s ease-in-out infinite;
-            white-space: nowrap;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 900px) {
-            #control-panel {
-                position: relative;
-                top: auto;
-                right: auto;
-                margin-top: 24px;
-                width: calc(100% - 40px);
-                max-width: 400px;
+        @media (max-width: 768px), (hover: none) {
+            .mobile-controls {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
             }
 
             .game-wrapper {
-                width: 100%;
-                padding: 0 20px;
-            }
-
-            #game-canvas {
-                width: 100%;
-                height: auto;
+                padding-bottom: 100px;
             }
         }
 
-        /* 触摸提示 */
-        .touch-hint {
-            display: none;
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
+        .mobile-btn {
+            flex: 1;
+            max-width: 140px;
+            height: 64px;
+            border-radius: 12px;
+            border: 2px solid;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        @media (hover: none) and (pointer: coarse) {
-            .touch-hint { display: block; }
-            .start-prompt { bottom: 100px; }
+        .mobile-btn:active {
+            transform: scale(0.92);
+        }
+
+        .mobile-btn.jump-btn {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .mobile-btn.jump-btn:active {
+            background: var(--neon-green);
+            color: var(--bg-deep);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .mobile-btn.duck-btn {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .mobile-btn.duck-btn:active {
+            background: var(--neon-blue);
+            color: var(--bg-deep);
+            box-shadow: 0 0 30px rgba(5, 217, 232, 0.5);
+        }
+
+        .mobile-btn-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .mobile-btn-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 遮罩层 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 140;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .game-title {
+                margin-bottom: 12px;
+            }
+
+            #game-container {
+                padding: 6px;
+                border-radius: 6px;
+            }
+
+            .settings-toggle {
+                top: 12px;
+                right: 12px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .hud {
+                top: 12px;
+                right: 12px;
+            }
+
+            #control-panel {
+                width: 100%;
+            }
+
+            .mobile-btn {
+                height: 70px;
+            }
         }
 
         /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
+                transition-duration: 0.1s !important;
             }
         }
     </style>
@@ -350,146 +536,200 @@
 <body>
     <div class="grid-bg"></div>
 
+    <!-- 设置按钮 -->
+    <button class="settings-toggle" id="settingsToggle" aria-label="Settings">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+    </button>
+
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 控制面板 -->
+    <div id="control-panel">
+        <div class="panel-header">
+            <div class="panel-title">Game Settings</div>
+        </div>
+        <div class="panel-content">
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Gravity</span>
+                    <span class="control-value" id="val-gravity">0.6</span>
+                </div>
+                <input type="range" id="cfg-gravity" min="0.3" max="1.2" step="0.1" value="0.6">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Speed</span>
+                    <span class="control-value" id="val-speed">1.0x</span>
+                </div>
+                <input type="range" id="cfg-speed" min="0.5" max="2.5" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Difficulty</span>
+                    <span class="control-value" id="val-freq">Normal</span>
+                </div>
+                <input type="range" id="cfg-freq" min="0.5" max="2.0" step="0.1" value="1.0">
+            </div>
+
+            <div class="btn-row">
+                <button class="btn pause-btn" id="btn-pause">Pause</button>
+                <button class="btn restart-btn" id="btn-restart">Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏区域 -->
     <div class="game-wrapper">
         <h1 class="game-title">Neon Dino</h1>
         
         <div id="game-container">
-            <canvas id="game-canvas" width="800" height="200"></canvas>
-            <div class="score-display">
-                <div class="score-label">Score</div>
-                <div class="score-value" id="score">0</div>
-                <div class="high-score" id="high-score">HI: 0</div>
+            <canvas id="game-canvas"></canvas>
+            
+            <div class="hud">
+                <div class="hud-label">Score</div>
+                <div class="hud-score" id="score">0</div>
+                <div class="hud-high" id="high-score">HI: 0</div>
             </div>
-            <div class="start-prompt" id="prompt">Press SPACE or TAP to start</div>
-            <div class="touch-hint">Tap anywhere to jump</div>
+
+            <div class="start-overlay" id="start-overlay">
+                <div class="start-text" id="start-text">Tap or Press Space to Start</div>
+            </div>
         </div>
     </div>
 
-    <div id="control-panel">
-        <div class="panel-title">System Config</div>
-        
-        <div class="control-group">
-            <div class="control-label">
-                <span>Gravity</span>
-                <span class="control-value" id="val-gravity">0.6</span>
-            </div>
-            <input type="range" id="cfg-gravity" min="0.3" max="1.2" step="0.1" value="0.6">
-        </div>
-
-        <div class="control-group">
-            <div class="control-label">
-                <span>Speed Multiplier</span>
-                <span class="control-value" id="val-speed">1.0x</span>
-            </div>
-            <input type="range" id="cfg-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-        </div>
-
-        <div class="control-group">
-            <div class="control-label">
-                <span>Obstacle Frequency</span>
-                <span class="control-value" id="val-freq">Normal</span>
-            </div>
-            <input type="range" id="cfg-freq" min="0.5" max="2.0" step="0.1" value="1.0">
-        </div>
-
-        <div class="btn-group">
-            <button class="btn pause-btn" id="btn-pause">Pause</button>
-            <button class="btn restart-btn" id="btn-restart">Restart</button>
-        </div>
+    <!-- 移动端控制按钮 -->
+    <div class="mobile-controls">
+        <button class="mobile-btn duck-btn" id="mobile-duck" aria-label="Duck">
+            <svg class="mobile-btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 10l5 5 5-5z"/>
+            </svg>
+            <span class="mobile-btn-text">Duck</span>
+        </button>
+        <button class="mobile-btn jump-btn" id="mobile-jump" aria-label="Jump">
+            <svg class="mobile-btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 14l5-5 5 5z"/>
+            </svg>
+            <span class="mobile-btn-text">Jump</span>
+        </button>
     </div>
 
     <script>
     (function() {
         'use strict';
 
-        // ============== 配置常量 ==============
+        // ============== 配置 ==============
         const CONFIG = {
             GRAVITY: 0.6,
             SPEED_MULTIPLIER: 1.0,
             OBSTACLE_FREQ: 1.0,
-            CANVAS_WIDTH: 800,
-            CANVAS_HEIGHT: 200,
-            GROUND_Y: 180,
+            BASE_WIDTH: 800,
+            BASE_HEIGHT: 200,
+            GROUND_Y_RATIO: 0.9,
             INITIAL_SPEED: 6,
-            MAX_SPEED: 15,
+            MAX_SPEED: 18,
             ACCELERATION: 0.001,
             JUMP_VELOCITY: -10,
-            DUCK_JUMP_VELOCITY: -7,
-            MIN_OBSTACLE_GAP: 150,
-            MAX_OBSTACLE_GAP: 400
+            MIN_OBSTACLE_GAP: 180,
+            MAX_OBSTACLE_GAP: 450
         };
 
-        // ============== 颜色定义 ==============
         const COLORS = {
             DINO: '#00ff88',
-            DINO_DARK: '#00cc6a',
+            DINO_GLOW: 'rgba(0, 255, 136, 0.6)',
             OBSTACLE: '#ff2a6d',
-            OBSTACLE_DARK: '#cc2259',
+            OBSTACLE_GLOW: 'rgba(255, 42, 109, 0.5)',
             BIRD: '#05d9e8',
+            BIRD_GLOW: 'rgba(5, 217, 232, 0.5)',
             GROUND: '#00ff88',
-            GROUND_DARK: '#006633',
-            SKY: 'transparent',
-            CLOUD: 'rgba(0, 255, 136, 0.1)',
-            STAR: 'rgba(255, 255, 255, 0.5)'
+            GROUND_DIM: 'rgba(0, 255, 136, 0.3)',
+            CLOUD: 'rgba(0, 255, 136, 0.08)'
         };
 
-        // ============== 游戏状态 ==============
+        // ============== 状态 ==============
         const state = {
             isRunning: false,
             isPaused: false,
             isGameOver: false,
             score: 0,
-            highScore: parseInt(localStorage.getItem('dinoHighScore') || '0'),
+            highScore: parseInt(localStorage.getItem('neonDinoHighScore') || '0'),
             speed: CONFIG.INITIAL_SPEED,
             groundOffset: 0,
             obstacles: [],
             clouds: [],
-            particles: []
+            particles: [],
+            canvasWidth: CONFIG.BASE_WIDTH,
+            canvasHeight: CONFIG.BASE_HEIGHT,
+            groundY: CONFIG.BASE_HEIGHT * CONFIG.GROUND_Y_RATIO
         };
 
-        // ============== DOM 元素 ==============
+        // ============== DOM ==============
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('game-container');
         const scoreEl = document.getElementById('score');
         const highScoreEl = document.getElementById('high-score');
-        const promptEl = document.getElementById('prompt');
+        const startOverlay = document.getElementById('start-overlay');
+        const startText = document.getElementById('start-text');
+        const settingsToggle = document.getElementById('settingsToggle');
+        const controlPanel = document.getElementById('control-panel');
+        const overlay = document.getElementById('overlay');
         const btnPause = document.getElementById('btn-pause');
         const btnRestart = document.getElementById('btn-restart');
+        const mobileJump = document.getElementById('mobile-jump');
+        const mobileDuck = document.getElementById('mobile-duck');
 
-        // ============== 恐龙类 ==============
+        // ============== 响应式画布 ==============
+        function resizeCanvas() {
+            const containerWidth = container.clientWidth - 16;
+            const scale = Math.min(1, containerWidth / CONFIG.BASE_WIDTH);
+            
+            state.canvasWidth = Math.floor(CONFIG.BASE_WIDTH * scale);
+            state.canvasHeight = Math.floor(CONFIG.BASE_HEIGHT * scale);
+            state.groundY = state.canvasHeight * CONFIG.GROUND_Y_RATIO;
+            
+            canvas.width = state.canvasWidth;
+            canvas.height = state.canvasHeight;
+            
+            if (dino) {
+                dino.baseY = state.groundY - dino.height;
+                if (!dino.isJumping) {
+                    dino.y = dino.baseY;
+                }
+            }
+        }
+
+        // ============== 恐龙 ==============
         class Dino {
             constructor() {
                 this.width = 44;
                 this.height = 47;
                 this.x = 50;
-                this.y = CONFIG.GROUND_Y - this.height;
-                this.baseY = this.y;
+                this.baseY = state.groundY - this.height;
+                this.y = this.baseY;
                 this.velocityY = 0;
                 this.isJumping = false;
                 this.isDucking = false;
                 this.duckHeight = 30;
                 this.frame = 0;
                 this.frameTimer = 0;
-                this.frameInterval = 6;
             }
 
             jump() {
                 if (!this.isJumping) {
                     this.isJumping = true;
                     this.velocityY = CONFIG.JUMP_VELOCITY * (CONFIG.GRAVITY / 0.6);
-                    createParticles(this.x, this.y + this.height, 5, COLORS.DINO);
+                    spawnParticles(this.x + 10, this.y + this.height, 8, COLORS.DINO);
                 }
             }
 
-            duck(isDucking) {
+            duck(active) {
                 if (!this.isJumping) {
-                    this.isDucking = isDucking;
-                    if (isDucking) {
-                        this.y = this.baseY + (this.height - this.duckHeight);
-                    } else {
-                        this.y = this.baseY;
-                    }
+                    this.isDucking = active;
                 }
             }
 
@@ -498,7 +738,7 @@
                     this.velocityY += CONFIG.GRAVITY;
                     this.y += this.velocityY;
 
-                    const groundLevel = this.isDucking 
+                    const groundLevel = this.isDucking
                         ? this.baseY + (this.height - this.duckHeight)
                         : this.baseY;
 
@@ -506,100 +746,87 @@
                         this.y = groundLevel;
                         this.isJumping = false;
                         this.velocityY = 0;
-                        createParticles(this.x, this.y + this.height, 3, COLORS.DINO);
+                        spawnParticles(this.x + 10, this.y + this.height, 5, COLORS.DINO);
                     }
                 }
 
-                // 动画帧
                 this.frameTimer++;
-                if (this.frameTimer >= this.frameInterval) {
+                if (this.frameTimer >= 6) {
                     this.frameTimer = 0;
                     this.frame = (this.frame + 1) % 2;
                 }
             }
 
             draw() {
+                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+                const x = this.x * scale;
+                const y = this.y * scale;
+                const w = this.width * scale;
+                const h = (this.isDucking ? this.duckHeight : this.height) * scale;
+
+                ctx.shadowColor = COLORS.DINO_GLOW;
+                ctx.shadowBlur = 12 * scale;
                 ctx.fillStyle = COLORS.DINO;
-                ctx.shadowColor = COLORS.DINO;
-                ctx.shadowBlur = 10;
 
-                const currentHeight = this.isDucking ? this.duckHeight : this.height;
-                const currentY = this.isDucking ? this.baseY + (this.height - this.duckHeight) : this.y;
-
-                // 简化的恐龙形状
                 if (this.isDucking) {
-                    // 蹲下姿态
-                    ctx.fillRect(this.x, currentY, 55, currentHeight);
-                    // 头部
-                    ctx.fillRect(this.x + 45, currentY - 5, 20, 15);
-                    // 眼睛
-                    ctx.fillStyle = CONFIG.BG_DEEP || '#0a0a0f';
-                    ctx.fillRect(this.x + 55, currentY - 2, 4, 4);
+                    ctx.fillRect(x, y, w * 1.25, h);
+                    ctx.fillRect(x + w, y - 5 * scale, w * 0.4, 15 * scale);
                 } else {
-                    // 站立身体
-                    ctx.fillRect(this.x, currentY, 20, currentHeight);
-                    // 头部
-                    ctx.fillRect(this.x + 10, currentY - 20, 30, 25);
-                    // 眼睛
-                    ctx.fillStyle = CONFIG.BG_DEEP || '#0a0a0f';
-                    ctx.fillRect(this.x + 28, currentY - 15, 5, 5);
+                    ctx.fillRect(x, y, w * 0.45, h);
+                    ctx.fillRect(x + w * 0.22, y - 20 * scale, w * 0.7, 25 * scale);
                     
-                    // 腿部动画
-                    ctx.fillStyle = COLORS.DINO;
-                    if (this.isJumping) {
-                        ctx.fillRect(this.x + 5, currentY + currentHeight, 8, 10);
-                        ctx.fillRect(this.x + 15, currentY + currentHeight, 8, 6);
-                    } else if (this.frame === 0) {
-                        ctx.fillRect(this.x + 5, currentY + currentHeight, 8, 12);
-                        ctx.fillRect(this.x + 15, currentY + currentHeight, 8, 6);
-                    } else {
-                        ctx.fillRect(this.x + 5, currentY + currentHeight, 8, 6);
-                        ctx.fillRect(this.x + 15, currentY + currentHeight, 8, 12);
-                    }
+                    const legOffset = this.isJumping ? 0 : (this.frame === 0 ? 0 : 6 * scale);
+                    ctx.fillRect(x + 10 * scale, y + h, 8 * scale, (10 + legOffset) * scale);
+                    ctx.fillRect(x + 25 * scale, y + h, 8 * scale, (16 - legOffset) * scale);
                 }
 
                 ctx.shadowBlur = 0;
             }
 
             getBounds() {
+                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
                 const currentHeight = this.isDucking ? this.duckHeight : this.height;
-                const currentY = this.isDucking ? this.baseY + (this.height - this.duckHeight) : this.y;
+                const currentY = this.isDucking 
+                    ? this.baseY + (this.height - this.duckHeight) 
+                    : this.y;
+
                 return {
-                    x: this.x + 5,
-                    y: currentY + 5,
-                    width: (this.isDucking ? 50 : 25) - 10,
-                    height: currentHeight - 10
+                    x: (this.x + 8) * scale,
+                    y: (currentY + 8) * scale,
+                    width: (this.isDucking ? 45 : 28) * scale,
+                    height: (currentHeight - 12) * scale
                 };
             }
         }
 
-        // ============== 障碍物类 ==============
+        // ============== 障碍物 ==============
         class Obstacle {
             constructor(type) {
                 this.type = type;
-                this.x = CONFIG.CANVAS_WIDTH + 50;
-                
+                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+                this.x = state.canvasWidth + 50;
+
                 if (type === 'cactus') {
-                    this.width = 15 + Math.random() * 20;
-                    this.height = 30 + Math.random() * 30;
-                    this.y = CONFIG.GROUND_Y - this.height;
+                    this.width = (15 + Math.random() * 20) * scale;
+                    this.height = (30 + Math.random() * 30) * scale;
+                    this.y = state.groundY - this.height;
                 } else if (type === 'doubleCactus') {
-                    this.width = 40;
-                    this.height = 40;
-                    this.y = CONFIG.GROUND_Y - this.height;
+                    this.width = 45 * scale;
+                    this.height = 45 * scale;
+                    this.y = state.groundY - this.height;
                 } else if (type === 'bird') {
-                    this.width = 40;
-                    this.height = 30;
-                    this.y = CONFIG.GROUND_Y - 80 - Math.random() * 60;
+                    this.width = 42 * scale;
+                    this.height = 32 * scale;
+                    this.y = state.groundY - (80 + Math.random() * 50) * scale;
                 }
-                
+
                 this.frame = 0;
                 this.frameTimer = 0;
             }
 
             update() {
-                this.x -= state.speed * CONFIG.SPEED_MULTIPLIER;
-                
+                this.x -= state.speed * CONFIG.SPEED_MULTIPLIER * (state.canvasWidth / CONFIG.BASE_WIDTH);
+
                 if (this.type === 'bird') {
                     this.frameTimer++;
                     if (this.frameTimer >= 8) {
@@ -610,40 +837,32 @@
             }
 
             draw() {
+                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+
                 if (this.type === 'bird') {
+                    ctx.shadowColor = COLORS.BIRD_GLOW;
+                    ctx.shadowBlur = 10 * scale;
                     ctx.fillStyle = COLORS.BIRD;
-                    ctx.shadowColor = COLORS.BIRD;
-                    ctx.shadowBlur = 8;
-                    
-                    // 鸟身体
-                    ctx.fillRect(this.x, this.y, this.width, 15);
-                    // 翅膀动画
+
+                    ctx.fillRect(this.x, this.y, this.width, 12 * scale);
                     if (this.frame === 0) {
-                        ctx.fillRect(this.x + 10, this.y - 15, 20, 15);
+                        ctx.fillRect(this.x + 8 * scale, this.y - 12 * scale, 20 * scale, 12 * scale);
                     } else {
-                        ctx.fillRect(this.x + 10, this.y + 15, 20, 10);
+                        ctx.fillRect(this.x + 8 * scale, this.y + 12 * scale, 20 * scale, 8 * scale);
                     }
                 } else {
+                    ctx.shadowColor = COLORS.OBSTACLE_GLOW;
+                    ctx.shadowBlur = 10 * scale;
                     ctx.fillStyle = COLORS.OBSTACLE;
-                    ctx.shadowColor = COLORS.OBSTACLE;
-                    ctx.shadowBlur = 8;
-                    
+
                     if (this.type === 'doubleCactus') {
-                        // 双仙人掌
-                        ctx.fillRect(this.x, this.y, 12, this.height);
-                        ctx.fillRect(this.x + 20, this.y + 5, 12, this.height - 5);
-                        // 刺
-                        ctx.fillRect(this.x - 5, this.y + 10, 5, 3);
-                        ctx.fillRect(this.x + 12, this.y + 15, 5, 3);
-                        ctx.fillRect(this.x + 15, this.y + 20, 5, 3);
+                        ctx.fillRect(this.x, this.y, 12 * scale, this.height);
+                        ctx.fillRect(this.x + 22 * scale, this.y + 5 * scale, 12 * scale, this.height - 5 * scale);
                     } else {
-                        // 单仙人掌
                         ctx.fillRect(this.x, this.y, this.width, this.height);
-                        // 刺
-                        ctx.fillRect(this.x - 5, this.y + 15, 5, 3);
-                        ctx.fillRect(this.x + this.width, this.y + 10, 5, 3);
                     }
                 }
+
                 ctx.shadowBlur = 0;
             }
 
@@ -657,15 +876,16 @@
             }
         }
 
-        // ============== 粒子系统 ==============
-        function createParticles(x, y, count, color) {
+        // ============== 粒子 ==============
+        function spawnParticles(x, y, count, color) {
+            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
             for (let i = 0; i < count; i++) {
                 state.particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: -Math.random() * 4 - 2,
-                    size: 2 + Math.random() * 3,
+                    x: x * scale,
+                    y: y * scale,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: -Math.random() * 6 - 2,
+                    size: (2 + Math.random() * 3) * scale,
                     color: color,
                     life: 1
                 });
@@ -677,9 +897,9 @@
                 const p = state.particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.2;
-                p.life -= 0.03;
-                
+                p.vy += 0.25;
+                p.life -= 0.025;
+
                 if (p.life <= 0) {
                     state.particles.splice(i, 1);
                 }
@@ -688,32 +908,36 @@
 
         function drawParticles() {
             state.particles.forEach(p => {
-                ctx.globalAlpha = p.life;
+                ctx.globalAlpha = Math.max(0, p.life);
                 ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 6;
                 ctx.fillRect(p.x, p.y, p.size, p.size);
             });
             ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
         }
 
-        // ============== 背景元素 ==============
+        // ============== 背景 ==============
         function initClouds() {
             state.clouds = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 state.clouds.push({
-                    x: Math.random() * CONFIG.CANVAS_WIDTH,
-                    y: 20 + Math.random() * 50,
+                    x: Math.random() * state.canvasWidth,
+                    y: 20 + Math.random() * 40,
                     width: 40 + Math.random() * 40,
-                    speed: 0.2 + Math.random() * 0.3
+                    speed: 0.3 + Math.random() * 0.3
                 });
             }
         }
 
         function updateClouds() {
+            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
             state.clouds.forEach(cloud => {
-                cloud.x -= cloud.speed;
+                cloud.x -= cloud.speed * scale;
                 if (cloud.x + cloud.width < 0) {
-                    cloud.x = CONFIG.CANVAS_WIDTH + 50;
-                    cloud.y = 20 + Math.random() * 50;
+                    cloud.x = state.canvasWidth + 50;
+                    cloud.y = 20 + Math.random() * 40;
                 }
             });
         }
@@ -721,33 +945,29 @@
         function drawClouds() {
             ctx.fillStyle = COLORS.CLOUD;
             state.clouds.forEach(cloud => {
-                ctx.fillRect(cloud.x, cloud.y, cloud.width, 15);
-                ctx.fillRect(cloud.x + 10, cloud.y - 10, cloud.width * 0.6, 12);
+                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+                ctx.fillRect(cloud.x * scale, cloud.y * scale, cloud.width * scale, 12 * scale);
             });
         }
 
-        // ============== 地面绘制 ==============
         function drawGround() {
-            const groundY = CONFIG.GROUND_Y;
-            
-            // 主地面线
+            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
             ctx.strokeStyle = COLORS.GROUND;
-            ctx.lineWidth = 2;
-            ctx.shadowColor = COLORS.GROUND;
-            ctx.shadowBlur = 5;
+            ctx.lineWidth = 2 * scale;
+            ctx.shadowColor = COLORS.GROUND_DIM;
+            ctx.shadowBlur = 5 * scale;
             ctx.beginPath();
-            ctx.moveTo(0, groundY);
-            ctx.lineTo(CONFIG.CANVAS_WIDTH, groundY);
+            ctx.moveTo(0, state.groundY);
+            ctx.lineTo(state.canvasWidth, state.groundY);
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
-            // 地面纹理
-            ctx.fillStyle = COLORS.GROUND_DARK;
-            const offset = state.groundOffset % 20;
-            for (let x = -offset; x < CONFIG.CANVAS_WIDTH; x += 20) {
-                const height = 2 + Math.sin(x * 0.1) * 2;
-                ctx.fillRect(x, groundY + 2, 2, height);
+            ctx.fillStyle = COLORS.GROUND_DIM;
+            const offset = (state.groundOffset * scale) % (20 * scale);
+            for (let x = -offset; x < state.canvasWidth; x += 20 * scale) {
+                ctx.fillRect(x, state.groundY + 4 * scale, 2 * scale, 3 * scale);
             }
+
+            ctx.shadowBlur = 0;
         }
 
         function updateGround() {
@@ -755,33 +975,32 @@
         }
 
         // ============== 障碍物生成 ==============
-        let lastObstacleX = CONFIG.CANVAS_WIDTH;
-
         function spawnObstacle() {
-            const gap = (CONFIG.MIN_OBSTACLE_GAP + Math.random() * (CONFIG.MAX_OBSTACLE_GAP - CONFIG.MIN_OBSTACLE_GAP)) 
-                        * CONFIG.OBSTACLE_FREQ;
-            
-            if (state.obstacles.length === 0 || 
-                CONFIG.CANVAS_WIDTH - state.obstacles[state.obstacles.length - 1].x > gap) {
-                
+            const minGap = CONFIG.MIN_OBSTACLE_GAP * CONFIG.OBSTACLE_FREQ;
+            const maxGap = CONFIG.MAX_OBSTACLE_GAP * CONFIG.OBSTACLE_FREQ;
+            const gap = minGap + Math.random() * (maxGap - minGap);
+
+            const lastObs = state.obstacles[state.obstacles.length - 1];
+            const lastX = lastObs ? lastObs.x : 0;
+
+            if (!lastObs || state.canvasWidth - lastX > gap) {
                 const types = ['cactus', 'cactus', 'doubleCactus'];
-                if (state.score > 200) types.push('bird');
-                
-                const type = types[Math.floor(Math.random() * types.length)];
-                state.obstacles.push(new Obstacle(type));
+                if (state.score > 300) types.push('bird');
+                if (state.score > 600) types.push('bird', 'doubleCactus');
+
+                state.obstacles.push(new Obstacle(types[Math.floor(Math.random() * types.length)]));
             }
         }
 
         function updateObstacles() {
             for (let i = state.obstacles.length - 1; i >= 0; i--) {
                 state.obstacles[i].update();
-                
-                if (state.obstacles[i].x < -50) {
+                if (state.obstacles[i].x < -60) {
                     state.obstacles.splice(i, 1);
                 }
             }
-            
-            if (Math.random() < 0.02) {
+
+            if (Math.random() < 0.018) {
                 spawnObstacle();
             }
         }
@@ -791,17 +1010,19 @@
         }
 
         // ============== 碰撞检测 ==============
-        function checkCollision(rect1, rect2) {
-            return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
+        function checkCollision(a, b) {
+            return a.x < b.x + b.width &&
+                   a.x + a.width > b.x &&
+                   a.y < b.y + b.height &&
+                   a.y + a.height > b.y;
         }
 
         // ============== 游戏逻辑 ==============
         let dino = null;
+        let animationId = null;
 
         function initGame() {
+            resizeCanvas();
             dino = new Dino();
             state.obstacles = [];
             state.particles = [];
@@ -811,96 +1032,99 @@
             state.isGameOver = false;
             state.isRunning = false;
             state.isPaused = false;
-            
+
             initClouds();
-            
             container.classList.remove('game-over', 'paused');
-            promptEl.style.display = 'block';
-            promptEl.textContent = 'Press SPACE or TAP to start';
-            
-            updateScoreDisplay();
+            startOverlay.style.display = 'flex';
+            startText.className = 'start-text';
+            startText.textContent = 'Tap or Press Space to Start';
+
+            updateHUD();
+            drawFrame();
         }
 
         function startGame() {
             if (!state.isRunning && !state.isGameOver) {
                 state.isRunning = true;
-                promptEl.style.display = 'none';
-                gameLoop();
+                startOverlay.style.display = 'none';
+                runGame();
             }
         }
 
         function gameOver() {
             state.isGameOver = true;
             state.isRunning = false;
-            
+
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
             container.classList.add('game-over');
-            
+
             if (state.score > state.highScore) {
                 state.highScore = state.score;
-                localStorage.setItem('dinoHighScore', state.highScore.toString());
+                localStorage.setItem('neonDinoHighScore', state.highScore.toString());
             }
-            
-            updateScoreDisplay();
-            
-            promptEl.style.display = 'block';
-            promptEl.textContent = 'GAME OVER - Press SPACE to restart';
-            
-            // 爆炸粒子
+
+            updateHUD();
+
+            startOverlay.style.display = 'flex';
+            startText.className = 'game-over-text';
+            startText.textContent = 'Game Over - Tap to Restart';
+
             const bounds = dino.getBounds();
-            createParticles(bounds.x, bounds.y, 20, COLORS.OBSTACLE);
+            spawnParticles(bounds.x, bounds.y, 15, COLORS.OBSTACLE);
+            drawFrame();
         }
 
         function togglePause() {
             if (state.isGameOver || !state.isRunning) return;
-            
+
             state.isPaused = !state.isPaused;
             btnPause.textContent = state.isPaused ? 'Resume' : 'Pause';
             btnPause.classList.toggle('active', state.isPaused);
             container.classList.toggle('paused', state.isPaused);
-            
+
             if (!state.isPaused) {
-                gameLoop();
+                runGame();
             }
         }
 
         function restart() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
             initGame();
             state.isRunning = true;
-            promptEl.style.display = 'none';
-            gameLoop();
+            startOverlay.style.display = 'none';
+            runGame();
         }
 
-        function updateScoreDisplay() {
+        function updateHUD() {
             scoreEl.textContent = state.score;
             highScoreEl.textContent = 'HI: ' + state.highScore;
         }
 
-        // ============== 主游戏循环 ==============
-        function gameLoop() {
+        // ============== 游戏循环 ==============
+        function runGame() {
             if (state.isPaused || state.isGameOver) return;
 
-            // 清空画布
-            ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-
-            // 更新
             updateClouds();
             updateGround();
             dino.update();
             updateObstacles();
             updateParticles();
 
-            // 速度递增
             if (state.speed < CONFIG.MAX_SPEED) {
                 state.speed += CONFIG.ACCELERATION * CONFIG.SPEED_MULTIPLIER;
             }
 
-            // 分数
             state.score++;
-            if (state.score % 10 === 0) {
-                updateScoreDisplay();
+            if (state.score % 5 === 0) {
+                updateHUD();
             }
 
-            // 碰撞检测
             const dinoBounds = dino.getBounds();
             for (const obs of state.obstacles) {
                 if (checkCollision(dinoBounds, obs.getBounds())) {
@@ -909,83 +1133,99 @@
                 }
             }
 
-            // 绘制
+            drawFrame();
+            animationId = requestAnimationFrame(runGame);
+        }
+
+        function drawFrame() {
+            ctx.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
             drawClouds();
             drawGround();
             drawObstacles();
             dino.draw();
             drawParticles();
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        // ============== 初始绘制 ==============
-        function initialDraw() {
-            ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-            drawClouds();
-            drawGround();
-            dino.draw();
         }
 
         // ============== 输入处理 ==============
+        function handleJump() {
+            if (state.isGameOver) {
+                restart();
+            } else if (!state.isRunning) {
+                startGame();
+            } else if (!state.isPaused) {
+                dino.jump();
+            }
+        }
+
+        function handleDuck(active) {
+            if (state.isRunning && !state.isPaused) {
+                dino.duck(active);
+            }
+        }
+
+        // 键盘
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.code === 'ArrowUp') {
                 e.preventDefault();
-                
-                if (state.isGameOver) {
-                    restart();
-                } else if (!state.isRunning) {
-                    startGame();
-                } else if (!state.isPaused) {
-                    dino.jump();
-                }
+                handleJump();
             }
-            
             if (e.code === 'ArrowDown') {
                 e.preventDefault();
-                if (state.isRunning && !state.isPaused) {
-                    dino.duck(true);
-                }
+                handleDuck(true);
             }
-            
-            if (e.code === 'KeyP') {
-                togglePause();
-            }
-            
-            if (e.code === 'KeyR') {
-                restart();
-            }
+            if (e.code === 'KeyP') togglePause();
+            if (e.code === 'KeyR') restart();
         });
 
         document.addEventListener('keyup', (e) => {
             if (e.code === 'ArrowDown') {
-                dino.duck(false);
+                handleDuck(false);
             }
         });
 
-        // 触摸/点击控制
-        canvas.addEventListener('click', () => {
-            if (state.isGameOver) {
-                restart();
-            } else if (!state.isRunning) {
-                startGame();
-            } else if (!state.isPaused) {
-                dino.jump();
-            }
-        });
-
+        // 触摸/点击
+        canvas.addEventListener('click', handleJump);
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if (state.isGameOver) {
-                restart();
-            } else if (!state.isRunning) {
-                startGame();
-            } else if (!state.isPaused) {
-                dino.jump();
-            }
-        });
+            handleJump();
+        }, { passive: false });
+
+        // 移动端按钮
+        mobileJump.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleJump();
+        }, { passive: false });
+
+        mobileJump.addEventListener('click', handleJump);
+
+        mobileDuck.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleDuck(true);
+        }, { passive: false });
+
+        mobileDuck.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleDuck(false);
+        }, { passive: false });
+
+        mobileDuck.addEventListener('mousedown', () => handleDuck(true));
+        mobileDuck.addEventListener('mouseup', () => handleDuck(false));
+        mobileDuck.addEventListener('mouseleave', () => handleDuck(false));
 
         // ============== UI 控制 ==============
+        function toggleSettingsPanel(open) {
+            settingsToggle.classList.toggle('active', open);
+            controlPanel.classList.toggle('open', open);
+            overlay.classList.toggle('visible', open);
+        }
+
+        settingsToggle.addEventListener('click', () => {
+            const isOpen = controlPanel.classList.contains('open');
+            toggleSettingsPanel(!isOpen);
+        });
+
+        overlay.addEventListener('click', () => toggleSettingsPanel(false));
+
         btnPause.addEventListener('click', togglePause);
         btnRestart.addEventListener('click', restart);
 
@@ -1002,15 +1242,18 @@
 
         document.getElementById('cfg-freq').addEventListener('input', (e) => {
             CONFIG.OBSTACLE_FREQ = parseFloat(e.target.value);
-            const freqText = CONFIG.OBSTACLE_FREQ < 0.8 ? 'Hard' : 
-                            CONFIG.OBSTACLE_FREQ > 1.3 ? 'Easy' : 'Normal';
-            document.getElementById('val-freq').textContent = freqText;
+            const diff = CONFIG.OBSTACLE_FREQ < 0.8 ? 'Hard' : CONFIG.OBSTACLE_FREQ > 1.3 ? 'Easy' : 'Normal';
+            document.getElementById('val-freq').textContent = diff;
+        });
+
+        // 响应式
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawFrame();
         });
 
         // ============== 初始化 ==============
         initGame();
-        initialDraw();
-        updateScoreDisplay();
 
     })();
     </script>

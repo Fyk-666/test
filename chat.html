@@ -195,6 +195,42 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
 
+        /* 撤回按钮样式 (放在复制按钮旁边) */
+        .recall-btn {
+            position: absolute;
+            top: -20px;
+            right: 50px; /* 在复制按钮左边 */
+            opacity: 0;
+            pointer-events: none;
+            background: #ff4757; /* 红色 */
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .message-bubble:hover .recall-btn {
+            opacity: 1;
+            pointer-events: auto;
+            top: -25px;
+        }
+
+        /* 撤回后的系统提示样式 */
+        .system-tip {
+            align-self: center !important; /* 居中显示 */
+            background: rgba(0,0,0,0.05);
+            color: #999;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin: 5px 0;
+            border: none;
+            box-shadow: none;
+            max-width: 100%;
+        }
+
         /* 响应式 */
         @media (max-width: 768px) {
             .chat-container {
@@ -487,9 +523,10 @@
 
                 msgs.forEach(msg => {
                     const isMe = (msg.sender_id == myId);
+                    
+                    // 1. 日期分割线逻辑 (保持不变)
                     const msgDate = new Date(msg.created_at.endsWith('Z') ? msg.created_at : msg.created_at + 'Z');
                     const dateStr = msgDate.toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'});
-
                     if (dateStr !== lastDateStr) {
                         const dateDiv = document.createElement('div');
                         dateDiv.className = 'date-divider';
@@ -499,14 +536,35 @@
                         lastDateStr = dateStr;
                     }
 
+                    // 2. 直接生成气泡（不再判断 is_recalled，因为被删的消息根本不会出现在 msgs 数组里）
                     const bubble = document.createElement('div');
                     bubble.className = `message-bubble ${isMe ? 'msg-right' : 'msg-left'}`;
                     
-                    const statusIcon = msg.is_read 
-                        ? '<i class="fas fa-check-double msg-status read"></i>' 
-                        : '<i class="fas fa-check msg-status sent"></i>';
-                    
-                    bubble.innerHTML = `<div class="copy-btn" onclick="copyText(this)">复制</div><div class="msg-content-text">${msg.content}</div><div class="msg-meta"><span class="msg-time" onclick="toggleTime(this, '${msg.created_at}')">${formatTimeDisplay(msg.created_at, 'absolute')}</span>${isMe ? statusIcon : ''}</div>`;
+                    let statusHtml = '';
+                    let recallBtnHtml = '';
+
+                    if (isMe) {
+                        // 状态图标
+                        statusHtml = msg.is_read 
+                            ? '<i class="fas fa-check-double msg-status read"></i>' 
+                            : '<i class="fas fa-check msg-status sent"></i>';
+                        
+                        // 撤回按钮
+                        recallBtnHtml = `<div class="recall-btn" onclick="recallMessage(${msg.id})">撤回</div>`;
+                    }
+
+                    // 结构：[复制] [撤回] 内容 [时间/状态]
+                    bubble.innerHTML = `
+                        <div class="copy-btn" onclick="copyText(this)">复制</div>
+                        ${recallBtnHtml}
+                        <div class="msg-content-text">${msg.content}</div>
+                        <div class="msg-meta">
+                            <span class="msg-time" onclick="toggleTime(this, '${msg.created_at}')">
+                                ${formatTimeDisplay(msg.created_at, 'smart')}
+                            </span>
+                            ${statusHtml}
+                        </div>
+                    `;
                     
                     msgArea.appendChild(bubble);
                 });
@@ -583,6 +641,28 @@
             const bubble = btn.closest('.message-bubble');
             bubble.remove();
             sendMessage(content);
+        }
+        // --- 撤回消息函数 ---
+        async function recallMessage(msgId) {
+            if (!confirm("确定要撤回这条消息吗？")) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/messages/recall/${msgId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // 撤回成功，立即刷新列表
+                    loadMessages();
+                } else {
+                    alert("撤回失败: " + data.error);
+                }
+            } catch (e) {
+                alert("网络错误，无法撤回");
+            }
         }
     </script>
 </body>

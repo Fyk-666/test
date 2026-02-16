@@ -44,7 +44,6 @@
             touch-action: manipulation;
         }
 
-        /* 动态背景网格 */
         .grid-bg {
             position: fixed;
             top: 0;
@@ -65,7 +64,6 @@
             100% { transform: translateY(60px); }
         }
 
-        /* 游戏主容器 */
         .game-wrapper {
             position: relative;
             z-index: 10;
@@ -77,7 +75,6 @@
             max-width: 900px;
         }
 
-        /* 标题 */
         .game-title {
             font-family: 'Orbitron', sans-serif;
             font-size: clamp(24px, 6vw, 42px);
@@ -98,7 +95,6 @@
             50% { background-position: 100% 50%; }
         }
 
-        /* 游戏画布容器 */
         #game-container {
             position: relative;
             width: 100%;
@@ -145,7 +141,6 @@
             border-radius: 4px;
         }
 
-        /* 游戏内 HUD */
         .hud {
             position: absolute;
             top: 16px;
@@ -179,7 +174,6 @@
             opacity: 0.8;
         }
 
-        /* 开始提示 */
         .start-overlay {
             position: absolute;
             bottom: 50%;
@@ -213,7 +207,6 @@
             text-shadow: 0 0 20px var(--neon-pink);
         }
 
-        /* 设置按钮 (齿轮图标) */
         .settings-toggle {
             position: fixed;
             top: 16px;
@@ -252,7 +245,6 @@
             fill: var(--neon-pink);
         }
 
-        /* 控制面板 */
         #control-panel {
             position: fixed;
             top: 0;
@@ -392,7 +384,6 @@
             color: var(--bg-deep);
         }
 
-        /* 移动端控制按钮 */
         .mobile-controls {
             display: none;
             position: fixed;
@@ -473,7 +464,6 @@
             letter-spacing: 1px;
         }
 
-        /* 遮罩层 */
         .overlay {
             position: fixed;
             top: 0;
@@ -492,7 +482,6 @@
             visibility: visible;
         }
 
-        /* 响应式调整 */
         @media (max-width: 480px) {
             .game-title {
                 margin-bottom: 12px;
@@ -524,7 +513,6 @@
             }
         }
 
-        /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -536,17 +524,14 @@
 <body>
     <div class="grid-bg"></div>
 
-    <!-- 设置按钮 -->
     <button class="settings-toggle" id="settingsToggle" aria-label="Settings">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
         </svg>
     </button>
 
-    <!-- 遮罩层 -->
     <div class="overlay" id="overlay"></div>
 
-    <!-- 控制面板 -->
     <div id="control-panel">
         <div class="panel-header">
             <div class="panel-title">Game Settings</div>
@@ -583,7 +568,6 @@
         </div>
     </div>
 
-    <!-- 游戏区域 -->
     <div class="game-wrapper">
         <h1 class="game-title">Neon Dino</h1>
         
@@ -602,7 +586,6 @@
         </div>
     </div>
 
-    <!-- 移动端控制按钮 -->
     <div class="mobile-controls">
         <button class="mobile-btn duck-btn" id="mobile-duck" aria-label="Duck">
             <svg class="mobile-btn-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -638,6 +621,9 @@
             MAX_OBSTACLE_GAP: 450
         };
 
+        // 核心修复：定义固定的地面Y坐标（原始比例）
+        const BASE_GROUND_Y = CONFIG.BASE_HEIGHT * CONFIG.GROUND_Y_RATIO;
+
         const COLORS = {
             DINO: '#00ff88',
             DINO_GLOW: 'rgba(0, 255, 136, 0.6)',
@@ -662,9 +648,7 @@
             obstacles: [],
             clouds: [],
             particles: [],
-            canvasWidth: CONFIG.BASE_WIDTH,
-            canvasHeight: CONFIG.BASE_HEIGHT,
-            groundY: CONFIG.BASE_HEIGHT * CONFIG.GROUND_Y_RATIO
+            scale: 1
         };
 
         // ============== DOM ==============
@@ -686,21 +670,12 @@
         // ============== 响应式画布 ==============
         function resizeCanvas() {
             const containerWidth = container.clientWidth - 16;
-            const scale = Math.min(1, containerWidth / CONFIG.BASE_WIDTH);
+            state.scale = Math.min(1, containerWidth / CONFIG.BASE_WIDTH);
             
-            state.canvasWidth = Math.floor(CONFIG.BASE_WIDTH * scale);
-            state.canvasHeight = Math.floor(CONFIG.BASE_HEIGHT * scale);
-            state.groundY = state.canvasHeight * CONFIG.GROUND_Y_RATIO;
+            canvas.width = Math.floor(CONFIG.BASE_WIDTH * state.scale);
+            canvas.height = Math.floor(CONFIG.BASE_HEIGHT * state.scale);
             
-            canvas.width = state.canvasWidth;
-            canvas.height = state.canvasHeight;
-            
-            if (dino) {
-                dino.baseY = state.groundY - dino.height;
-                if (!dino.isJumping) {
-                    dino.y = dino.baseY;
-                }
-            }
+            // 恐龙位置在初始化时已基于 BASE_GROUND_Y 设置，无需在此调整
         }
 
         // ============== 恐龙 ==============
@@ -709,7 +684,8 @@
                 this.width = 44;
                 this.height = 47;
                 this.x = 50;
-                this.baseY = state.groundY - this.height;
+                // 修复：使用固定的地面坐标计算初始位置
+                this.baseY = BASE_GROUND_Y - this.height;
                 this.y = this.baseY;
                 this.velocityY = 0;
                 this.isJumping = false;
@@ -758,43 +734,43 @@
             }
 
             draw() {
-                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
-                const x = this.x * scale;
-                const y = this.y * scale;
-                const w = this.width * scale;
-                const h = (this.isDucking ? this.duckHeight : this.height) * scale;
+                const s = state.scale;
+                const x = this.x * s;
+                const y = this.y * s;
+                const w = this.width * s;
+                const h = (this.isDucking ? this.duckHeight : this.height) * s;
 
                 ctx.shadowColor = COLORS.DINO_GLOW;
-                ctx.shadowBlur = 12 * scale;
+                ctx.shadowBlur = 12 * s;
                 ctx.fillStyle = COLORS.DINO;
 
                 if (this.isDucking) {
                     ctx.fillRect(x, y, w * 1.25, h);
-                    ctx.fillRect(x + w, y - 5 * scale, w * 0.4, 15 * scale);
+                    ctx.fillRect(x + w, y - 5 * s, w * 0.4, 15 * s);
                 } else {
                     ctx.fillRect(x, y, w * 0.45, h);
-                    ctx.fillRect(x + w * 0.22, y - 20 * scale, w * 0.7, 25 * scale);
+                    ctx.fillRect(x + w * 0.22, y - 20 * s, w * 0.7, 25 * s);
                     
-                    const legOffset = this.isJumping ? 0 : (this.frame === 0 ? 0 : 6 * scale);
-                    ctx.fillRect(x + 10 * scale, y + h, 8 * scale, (10 + legOffset) * scale);
-                    ctx.fillRect(x + 25 * scale, y + h, 8 * scale, (16 - legOffset) * scale);
+                    const legOffset = this.isJumping ? 0 : (this.frame === 0 ? 0 : 6 * s);
+                    ctx.fillRect(x + 10 * s, y + h, 8 * s, (10 + legOffset) * s);
+                    ctx.fillRect(x + 25 * s, y + h, 8 * s, (16 - legOffset) * s);
                 }
 
                 ctx.shadowBlur = 0;
             }
 
             getBounds() {
-                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+                const s = state.scale;
                 const currentHeight = this.isDucking ? this.duckHeight : this.height;
                 const currentY = this.isDucking 
                     ? this.baseY + (this.height - this.duckHeight) 
                     : this.y;
 
                 return {
-                    x: (this.x + 8) * scale,
-                    y: (currentY + 8) * scale,
-                    width: (this.isDucking ? 45 : 28) * scale,
-                    height: (currentHeight - 12) * scale
+                    x: (this.x + 8) * s,
+                    y: (currentY + 8) * s,
+                    width: (this.isDucking ? 45 : 28) * s,
+                    height: (currentHeight - 12) * s
                 };
             }
         }
@@ -803,21 +779,20 @@
         class Obstacle {
             constructor(type) {
                 this.type = type;
-                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
-                this.x = state.canvasWidth + 50;
+                this.x = CONFIG.BASE_WIDTH + 50;  // 固定原始坐标
 
                 if (type === 'cactus') {
-                    this.width = (15 + Math.random() * 20) * scale;
-                    this.height = (30 + Math.random() * 30) * scale;
-                    this.y = state.groundY - this.height;
+                    this.width = 15 + Math.random() * 20;
+                    this.height = 30 + Math.random() * 30;
+                    this.y = BASE_GROUND_Y - this.height;
                 } else if (type === 'doubleCactus') {
-                    this.width = 45 * scale;
-                    this.height = 45 * scale;
-                    this.y = state.groundY - this.height;
+                    this.width = 45;
+                    this.height = 45;
+                    this.y = BASE_GROUND_Y - this.height;
                 } else if (type === 'bird') {
-                    this.width = 42 * scale;
-                    this.height = 32 * scale;
-                    this.y = state.groundY - (80 + Math.random() * 50) * scale;
+                    this.width = 42;
+                    this.height = 32;
+                    this.y = BASE_GROUND_Y - (80 + Math.random() * 50);
                 }
 
                 this.frame = 0;
@@ -825,7 +800,8 @@
             }
 
             update() {
-                this.x -= state.speed * CONFIG.SPEED_MULTIPLIER * (state.canvasWidth / CONFIG.BASE_WIDTH);
+                // 移动速度使用原始比例
+                this.x -= state.speed * CONFIG.SPEED_MULTIPLIER;
 
                 if (this.type === 'bird') {
                     this.frameTimer++;
@@ -837,29 +813,33 @@
             }
 
             draw() {
-                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+                const s = state.scale;
+                const x = this.x * s;
+                const y = this.y * s;
+                const w = this.width * s;
+                const h = this.height * s;
 
                 if (this.type === 'bird') {
                     ctx.shadowColor = COLORS.BIRD_GLOW;
-                    ctx.shadowBlur = 10 * scale;
+                    ctx.shadowBlur = 10 * s;
                     ctx.fillStyle = COLORS.BIRD;
 
-                    ctx.fillRect(this.x, this.y, this.width, 12 * scale);
+                    ctx.fillRect(x, y, w, 12 * s);
                     if (this.frame === 0) {
-                        ctx.fillRect(this.x + 8 * scale, this.y - 12 * scale, 20 * scale, 12 * scale);
+                        ctx.fillRect(x + 8 * s, y - 12 * s, 20 * s, 12 * s);
                     } else {
-                        ctx.fillRect(this.x + 8 * scale, this.y + 12 * scale, 20 * scale, 8 * scale);
+                        ctx.fillRect(x + 8 * s, y + 12 * s, 20 * s, 8 * s);
                     }
                 } else {
                     ctx.shadowColor = COLORS.OBSTACLE_GLOW;
-                    ctx.shadowBlur = 10 * scale;
+                    ctx.shadowBlur = 10 * s;
                     ctx.fillStyle = COLORS.OBSTACLE;
 
                     if (this.type === 'doubleCactus') {
-                        ctx.fillRect(this.x, this.y, 12 * scale, this.height);
-                        ctx.fillRect(this.x + 22 * scale, this.y + 5 * scale, 12 * scale, this.height - 5 * scale);
+                        ctx.fillRect(x, y, 12 * s, h);
+                        ctx.fillRect(x + 22 * s, y + 5 * s, 12 * s, h - 5 * s);
                     } else {
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        ctx.fillRect(x, y, w, h);
                     }
                 }
 
@@ -867,25 +847,26 @@
             }
 
             getBounds() {
+                const s = state.scale;
                 return {
-                    x: this.x + 3,
-                    y: this.y + 3,
-                    width: this.width - 6,
-                    height: this.height - 6
+                    x: this.x * s + 3 * s,
+                    y: this.y * s + 3 * s,
+                    width: this.width * s - 6 * s,
+                    height: this.height * s - 6 * s
                 };
             }
         }
 
         // ============== 粒子 ==============
         function spawnParticles(x, y, count, color) {
-            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+            // 存储原始坐标
             for (let i = 0; i < count; i++) {
                 state.particles.push({
-                    x: x * scale,
-                    y: y * scale,
+                    x: x,
+                    y: y,
                     vx: (Math.random() - 0.5) * 8,
                     vy: -Math.random() * 6 - 2,
-                    size: (2 + Math.random() * 3) * scale,
+                    size: 2 + Math.random() * 3,
                     color: color,
                     life: 1
                 });
@@ -907,12 +888,14 @@
         }
 
         function drawParticles() {
+            const s = state.scale;
             state.particles.forEach(p => {
                 ctx.globalAlpha = Math.max(0, p.life);
                 ctx.fillStyle = p.color;
                 ctx.shadowColor = p.color;
                 ctx.shadowBlur = 6;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+                // 绘制时缩放
+                ctx.fillRect(p.x * s, p.y * s, p.size * s, p.size * s);
             });
             ctx.globalAlpha = 1;
             ctx.shadowBlur = 0;
@@ -923,7 +906,7 @@
             state.clouds = [];
             for (let i = 0; i < 4; i++) {
                 state.clouds.push({
-                    x: Math.random() * state.canvasWidth,
+                    x: Math.random() * CONFIG.BASE_WIDTH,
                     y: 20 + Math.random() * 40,
                     width: 40 + Math.random() * 40,
                     speed: 0.3 + Math.random() * 0.3
@@ -932,39 +915,40 @@
         }
 
         function updateClouds() {
-            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
             state.clouds.forEach(cloud => {
-                cloud.x -= cloud.speed * scale;
+                cloud.x -= cloud.speed;
                 if (cloud.x + cloud.width < 0) {
-                    cloud.x = state.canvasWidth + 50;
+                    cloud.x = CONFIG.BASE_WIDTH + 50;
                     cloud.y = 20 + Math.random() * 40;
                 }
             });
         }
 
         function drawClouds() {
+            const s = state.scale;
             ctx.fillStyle = COLORS.CLOUD;
             state.clouds.forEach(cloud => {
-                const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
-                ctx.fillRect(cloud.x * scale, cloud.y * scale, cloud.width * scale, 12 * scale);
+                ctx.fillRect(cloud.x * s, cloud.y * s, cloud.width * s, 12 * s);
             });
         }
 
         function drawGround() {
-            const scale = state.canvasWidth / CONFIG.BASE_WIDTH;
+            const s = state.scale;
+            const groundY = BASE_GROUND_Y * s;
+            
             ctx.strokeStyle = COLORS.GROUND;
-            ctx.lineWidth = 2 * scale;
+            ctx.lineWidth = 2 * s;
             ctx.shadowColor = COLORS.GROUND_DIM;
-            ctx.shadowBlur = 5 * scale;
+            ctx.shadowBlur = 5 * s;
             ctx.beginPath();
-            ctx.moveTo(0, state.groundY);
-            ctx.lineTo(state.canvasWidth, state.groundY);
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(CONFIG.BASE_WIDTH * s, groundY);
             ctx.stroke();
 
             ctx.fillStyle = COLORS.GROUND_DIM;
-            const offset = (state.groundOffset * scale) % (20 * scale);
-            for (let x = -offset; x < state.canvasWidth; x += 20 * scale) {
-                ctx.fillRect(x, state.groundY + 4 * scale, 2 * scale, 3 * scale);
+            const offset = (state.groundOffset * s) % (20 * s);
+            for (let x = -offset; x < CONFIG.BASE_WIDTH * s; x += 20 * s) {
+                ctx.fillRect(x, groundY + 4 * s, 2 * s, 3 * s);
             }
 
             ctx.shadowBlur = 0;
@@ -983,7 +967,7 @@
             const lastObs = state.obstacles[state.obstacles.length - 1];
             const lastX = lastObs ? lastObs.x : 0;
 
-            if (!lastObs || state.canvasWidth - lastX > gap) {
+            if (!lastObs || CONFIG.BASE_WIDTH - lastX > gap) {
                 const types = ['cactus', 'cactus', 'doubleCactus'];
                 if (state.score > 300) types.push('bird');
                 if (state.score > 600) types.push('bird', 'doubleCactus');
@@ -1074,7 +1058,7 @@
             startText.textContent = 'Game Over - Tap to Restart';
 
             const bounds = dino.getBounds();
-            spawnParticles(bounds.x, bounds.y, 15, COLORS.OBSTACLE);
+            spawnParticles(bounds.x / state.scale, bounds.y / state.scale, 15, COLORS.OBSTACLE);
             drawFrame();
         }
 
@@ -1138,7 +1122,7 @@
         }
 
         function drawFrame() {
-            ctx.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawClouds();
             drawGround();
             drawObstacles();

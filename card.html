@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vaporwave Memory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #1a0a2e;
+            --bg-purple: #2d1b4e;
+            --neon-pink: #ff77ff;
+            --neon-cyan: #00ffff;
+            --neon-purple: #bf00ff;
+            --sunset-orange: #ff6b35;
+            --sunset-pink: #ff2a6d;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --card-size: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Righteous', cursive;
+            background: var(--bg-deep);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* 动态渐变背景 */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                #1a0a2e 0%,
+                #2d1b4e 25%,
+                #4a1942 50%,
+                #2d1b4e 75%,
+                #1a0a2e 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            z-index: -3;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 霓虹网格地面 */
+        .grid-floor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: 
+                linear-gradient(90deg, rgba(255, 119, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: gridMove 15s linear infinite;
+            z-index: -2;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 60px; }
+        }
+
+        /* 日落 */
+        .sun {
+            position: fixed;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(
+                180deg,
+                #ff6b35 0%,
+                #ff2a6d 40%,
+                #bf00ff 80%,
+                transparent 100%
+            );
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+            z-index: -2;
+            animation: sunPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
+        }
+
+        /* 扫描线效果 */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+        /* 主容器 */
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 标题区 */
+        .header {
+            text-align: center;
+            padding: 20px 0 30px;
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(28px, 8vw, 56px);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: linear-gradient(
+                90deg,
+                var(--neon-pink),
+                var(--neon-cyan),
+                var(--neon-purple),
+                var(--neon-pink)
+            );
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 5s linear infinite;
+            text-shadow: none;
+            filter: drop-shadow(0 0 20px rgba(255, 119, 255, 0.5));
+        }
+
+        @keyframes titleGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        .subtitle {
+            font-size: clamp(12px, 3vw, 16px);
+            color: var(--neon-cyan);
+            letter-spacing: 0.3em;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        /* 统计区 */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        /* 卡片网格 */
+        .card-grid {
+            display: grid;
+            gap: 12px;
+            justify-content: center;
+            margin: 0 auto;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* 卡片 */
+        .card {
+            position: relative;
+            width: var(--card-size);
+            height: var(--card-size);
+            cursor: pointer;
+            perspective: 1000px;
+            outline: none;
+        }
+
+        .card:focus-visible {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 4px;
+            border-radius: 12px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* 卡片背面 */
+        .card-back {
+            background: linear-gradient(
+                135deg,
+                rgba(191, 0, 255, 0.3),
+                rgba(255, 119, 255, 0.2)
+            );
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            width: 40%;
+            height: 40%;
+            border: 2px solid var(--neon-pink);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .card-back::after {
+            content: '';
+            position: absolute;
+            width: 20%;
+            height: 20%;
+            background: var(--neon-pink);
+            border-radius: 50%;
+            opacity: 0.3;
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* 卡片正面 */
+        .card-front {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 255, 255, 0.15),
+                rgba(255, 119, 255, 0.1)
+            );
+            backdrop-filter: blur(10px);
+            transform: rotateY(180deg);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card-icon {
+            font-size: calc(var(--card-size) * 0.5);
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* 悬停效果 */
+        .card:hover:not(.flipped):not(.matched) .card-inner {
+            transform: scale(1.05);
+        }
+
+        .card:hover:not(.flipped):not(.matched) .card-back {
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(255, 119, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* 翻开状态 - 霓虹外发光 */
+        .card.flipped:not(.matched) .card-front {
+            box-shadow: 
+                0 0 20px var(--neon-cyan),
+                0 0 40px rgba(0, 255, 255, 0.3);
+        }
+
+        /* 已配对状态 */
+        .card.matched {
+            pointer-events: none;
+        }
+
+        .card.matched .card-front {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 255, 136, 0.2),
+                rgba(0, 255, 255, 0.1)
+            );
+            opacity: 0.6;
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .card.matched .card-icon {
+            filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.8));
+            color: #00ff88 !important;
+        }
+
+        /* 错误晃动 */
+        .card.shake .card-inner {
+            animation: cardShake 0.4s ease;
+        }
+
+        @keyframes cardShake {
+            0%, 100% { transform: rotateY(180deg) translateX(0); }
+            25% { transform: rotateY(180deg) translateX(-10px); }
+            75% { transform: rotateY(180deg) translateX(10px); }
+        }
+
+        /* 控制栏 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 30px 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 12px 24px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 119, 255, 0.2);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 20px rgba(255, 119, 255, 0.3);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            border-color: var(--neon-pink);
+        }
+
+        .btn.primary:hover {
+            box-shadow: 0 0 30px rgba(255, 119, 255, 0.5);
+        }
+
+        /* 难度选择 */
+        .difficulty-select {
+            display: flex;
+            gap: 10px;
+            padding: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .diff-btn {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .diff-btn:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .diff-btn.active {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(191, 0, 255, 0.2));
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        /* 胜利弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 10, 46, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(
+                135deg,
+                rgba(45, 27, 78, 0.95),
+                rgba(74, 25, 66, 0.95)
+            );
+            border: 1px solid var(--neon-pink);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.4s ease;
+            box-shadow: 
+                0 0 60px rgba(255, 119, 255, 0.3),
+                0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.visible .modal {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .modal-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 25px 0;
+        }
+
+        .modal-stat {
+            text-align: center;
+        }
+
+        .modal-stat-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        /* 粒子容器 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFade 1s ease-out forwards;
+        }
+
+        @keyframes particleFade {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            :root {
+                --card-size: 60px;
+            }
+
+            .card-grid {
+                gap: 8px;
+            }
+
+            .stats-bar {
+                gap: 15px;
+            }
+
+            .stat-item {
+                padding: 8px 15px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 11px;
+            }
+
+            .modal {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            :root {
+                --card-size: 50px;
+            }
+
+            .card-icon {
+                font-size: calc(var(--card-size) * 0.45);
+            }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.1s !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="grid-floor"></div>
+    <div class="sun"></div>
+    <div class="scanlines"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Vaporwave Memory</h1>
+            <p class="subtitle">Match the Aesthetic</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-label">Moves</div>
+                <div class="stat-value" id="moves">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Pairs</div>
+                <div class="stat-value" id="pairs">0 / 8</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Time</div>
+                <div class="stat-value" id="timer">0:00</div>
+            </div>
+        </div>
+
+        <div class="difficulty-select">
+            <button class="diff-btn active" data-size="4">Easy 4x4</button>
+            <button class="diff-btn" data-size="6">Medium 6x6</button>
+            <button class="diff-btn" data-size="8">Hard 8x8</button>
+        </div>
+
+        <div class="card-grid" id="cardGrid"></div>
+
+        <div class="controls">
+            <button class="btn primary" id="restartBtn">New Game</button>
+        </div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div class="modal-overlay" id="winModal">
+        <div class="modal">
+            <h2 class="modal-title">You Win</h2>
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">All pairs matched!</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalMoves">0</div>
+                    <div class="modal-stat-label">Moves</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalTime">0:00</div>
+                    <div class="modal-stat-label">Time</div>
+                </div>
+            </div>
+            <button class="btn primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // 蒸汽波图标 - 使用 SVG 符号
+        const ICONS = [
+            // 雕塑
+            { symbol: '🏛️', color: '#ff77ff' },
+            // 磁带
+            { symbol: '📼', color: '#00ffff' },
+            // 棕榈树
+            { symbol: '🌴', color: '#00ff88' },
+            // 日落
+            { symbol: '🌅', color: '#ff6b35' },
+            // 跑车
+            { symbol: '🚗', color: '#ff2a6d' },
+            // 电脑
+            { symbol: '💻', color: '#bf00ff' },
+            // 软盘
+            { symbol: '💾', color: '#05d9e8' },
+            // 电话
+            { symbol: '📞', color: '#ff77ff' },
+            // 电视
+            { symbol: '📺', color: '#00ffff' },
+            // 音符
+            { symbol: '🎵', color: '#bf00ff' },
+            // 调色板
+            { symbol: '🎨', color: '#ff6b35' },
+            // 胶片
+            { symbol: '🎬', color: '#ff2a6d' },
+            // 游戏手柄
+            { symbol: '🎮', color: '#00ff88' },
+            // 火箭
+            { symbol: '🚀', color: '#05d9e8' },
+            // 星星
+            { symbol: '⭐', color: '#ffd700' },
+            // 月亮
+            { symbol: '🌙', color: '#c0c0ff' },
+            // 心形
+            { symbol: '💜', color: '#bf00ff' },
+            // 钻石
+            { symbol: '💎', color: '#00ffff' },
+            // 皇冠
+            { symbol: '👑', color: '#ffd700' },
+            // 火焰
+            { symbol: '🔥', color: '#ff6b35' },
+            // 闪电
+            { symbol: '⚡', color: '#ffff00' },
+            // 彩虹
+            { symbol: '🌈', color: '#ff77ff' },
+            // 花朵
+            { symbol: '🌸', color: '#ffb7c5' },
+            // 银河
+            { symbol: '🌌', color: '#9966ff' },
+            // 水晶球
+            { symbol: '🔮', color: '#bf00ff' },
+            // 药丸
+            { symbol: '💊', color: '#00ffff' },
+            // 吉他
+            { symbol: '🎸', color: '#ff6b35' },
+            // 飞碟
+            { symbol: '🛸', color: '#c0c0c0' },
+            // 眼睛
+            { symbol: '👁️', color: '#ff2a6d' },
+            // 外星人
+            { symbol: '👽', color: '#00ff88' },
+            // 火山
+            { symbol: '🌋', color: '#ff4500' },
+            // 城堡
+            { symbol: '🏰', color: '#dda0dd' }
+        ];
+
+        // 游戏状态
+        let gridSize = 4;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let moves = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let isLocked = false;
+        let gameStarted = false;
+
+        // DOM 元素
+        const cardGrid = document.getElementById('cardGrid');
+        const movesEl = document.getElementById('moves');
+        const pairsEl = document.getElementById('pairs');
+        const timerEl = document.getElementById('timer');
+        const restartBtn = document.getElementById('restartBtn');
+        const winModal = document.getElementById('winModal');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const particlesContainer = document.getElementById('particles');
+
+        // Fisher-Yates 洗牌
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 生成卡片数据
+        function generateCards() {
+            totalPairs = (gridSize * gridSize) / 2;
+            const selectedIcons = shuffle(ICONS).slice(0, totalPairs);
+            const cardData = [];
+
+            selectedIcons.forEach((icon, index) => {
+                cardData.push({ id: index * 2, icon: icon.symbol, color: icon.color, pairId: index });
+                cardData.push({ id: index * 2 + 1, icon: icon.symbol, color: icon.color, pairId: index });
+            });
+
+            return shuffle(cardData);
+        }
+
+        // 创建卡片元素
+        function createCardElement(card, index) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            cardEl.dataset.id = card.id;
+            cardEl.dataset.pairId = card.pairId;
+            cardEl.tabIndex = 0;
+            cardEl.setAttribute('role', 'button');
+            cardEl.setAttribute('aria-label', `Card ${index + 1}`);
+
+            cardEl.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-face card-back"></div>
+                    <div class="card-face card-front">
+                        <span class="card-icon" style="color: ${card.color}">${card.icon}</span>
+                    </div>
+                </div>
+            `;
+
+            cardEl.addEventListener('click', () => flipCard(cardEl, card));
+            cardEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    flipCard(cardEl, card);
+                }
+            });
+
+            return cardEl;
+        }
+
+        // 翻转卡片
+        function flipCard(cardEl, card) {
+            if (isLocked) return;
+            if (cardEl.classList.contains('flipped')) return;
+            if (cardEl.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+
+            if (!gameStarted) {
+                startTimer();
+                gameStarted = true;
+            }
+
+            cardEl.classList.add('flipped');
+            flippedCards.push({ element: cardEl, data: card });
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesEl.textContent = moves;
+                checkMatch();
+            }
+        }
+
+        // 检查配对
+        function checkMatch() {
+            const [first, second] = flippedCards;
+            isLocked = true;
+
+            if (first.data.pairId === second.data.pairId) {
+                // 配对成功
+                setTimeout(() => {
+                    first.element.classList.add('matched');
+                    second.element.classList.add('matched');
+                    matchedPairs++;
+                    pairsEl.textContent = `${matchedPairs} / ${totalPairs}`;
+
+                    // 触发粒子效果
+                    createParticles(first.element);
+                    createParticles(second.element);
+
+                    flippedCards = [];
+                    isLocked = false;
+
+                    // 检查胜利
+                    if (matchedPairs === totalPairs) {
+                        endGame();
+                    }
+                }, 300);
+            } else {
+                // 配对失败
+                setTimeout(() => {
+                    first.element.classList.add('shake');
+                    second.element.classList.add('shake');
+
+                    setTimeout(() => {
+                        first.element.classList.remove('flipped', 'shake');
+                        second.element.classList.remove('flipped', 'shake');
+                        flippedCards = [];
+                        isLocked = false;
+                    }, 600);
+                }, 800);
+            }
+        }
+
+        // 创建粒子效果
+        function createParticles(cardEl) {
+            const rect = cardEl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const colors = ['#ff77ff', '#00ffff', '#bf00ff', '#ff6b35', '#00ff88'];
+
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const angle = (Math.PI * 2 * i) / 12;
+                const distance = 60 + Math.random() * 40;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance - 30;
+
+                particle.style.cssText = `
+                    left: ${centerX}px;
+                    top: ${centerY}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    box-shadow: 0 0 10px currentColor;
+                    --tx: ${tx}px;
+                    --ty: ${ty}px;
+                `;
+
+                particlesContainer.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // 计时器
+        function startTimer() {
+            timer = 0;
+            timerInterval = setInterval(() => {
+                timer++;
+                const mins = Math.floor(timer / 60);
+                const secs = timer % 60;
+                timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // 结束游戏
+        function endGame() {
+            stopTimer();
+
+            const mins = Math.floor(timer / 60);
+            const secs = timer % 60;
+
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('finalTime').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+            setTimeout(() => {
+                winModal.classList.add('visible');
+            }, 500);
+        }
+
+        // 初始化游戏
+        function initGame() {
+            stopTimer();
+
+            cards = generateCards();
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            timer = 0;
+            isLocked = false;
+            gameStarted = false;
+
+            movesEl.textContent = '0';
+            pairsEl.textContent = `0 / ${totalPairs}`;
+            timerEl.textContent = '0:00';
+
+            // 设置网格样式
+            cardGrid.style.gridTemplateColumns = `repeat(${gridSize}, var(--card-size))`;
+
+            // 清空并生成卡片
+            cardGrid.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardEl = createCardElement(card, index);
+                cardGrid.appendChild(cardEl);
+            });
+
+            winModal.classList.remove('visible');
+        }
+
+        // 难度选择
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gridSize = parseInt(btn.dataset.size);
+                initGame();
+            });
+        });
+
+        // 按钮事件
+        restartBtn.addEventListener('click', initGame);
+        playAgainBtn.addEventListener('click', initGame);
+
+        // 初始化
+        initGame();
+
+    })();
+    </script>
+</body>
+</html>

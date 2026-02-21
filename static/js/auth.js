@@ -62,7 +62,7 @@ async function checkAuth() {
             }
         } else {
             // 令牌无效，清除令牌并重定向
-            //localStorage.removeItem('token');
+            localStorage.removeItem('token');
 
             if (document.getElementById('loginBtn')) {
                 document.getElementById('loginBtn').style.display = 'inline-block';
@@ -117,7 +117,7 @@ async function displayCurrentUser() {
         if (!token) return;
 
         const response = await fetch('https://kczx.pythonanywhere.com/api/current-user', {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {

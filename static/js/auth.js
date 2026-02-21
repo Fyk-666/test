@@ -22,7 +22,7 @@ async function checkAuth() {
 
             // 处理 admin.html 页面
             if (window.location.pathname.includes('admin.html')) {
-                smartRedirect('login.html');
+                window.location.href = 'login.html';
             }
 
             return;
@@ -62,7 +62,8 @@ async function checkAuth() {
             }
         } else {
             // 令牌无效，清除令牌并重定向
-            localStorage.removeItem('token');
+            //localStorage.removeItem('token');
+
             if (document.getElementById('loginBtn')) {
                 document.getElementById('loginBtn').style.display = 'inline-block';
             }
@@ -81,7 +82,7 @@ async function checkAuth() {
 
             // 处理 admin.html 页面
             if (window.location.pathname.includes('admin.html')) {
-                smartRedirect('login.html');
+                window.location.href = 'login.html';
             }
         }
     } catch (error) {
@@ -105,7 +106,7 @@ async function checkAuth() {
 
         // 处理 admin.html 页面
         if (window.location.pathname.includes('admin.html')) {
-            smartRedirect('login.html');
+            window.location.href = 'login.html';
         }
     }
 }
@@ -157,7 +158,7 @@ if (document.getElementById('logoutBtn')) {
                 });
             }
             localStorage.removeItem('token');
-            smartRedirect('login.html');
+            window.location.href = 'login.html';
         } catch (error) {
             console.error('退出登录失败:', error);
             alert('退出登录失败，请检查网络连接');

@@ -227,14 +227,15 @@
 
         <!-- 顶部操作按钮 -->
         <div class="action-bar">
-            <button id="uploadBtn" class="btn btn-primary">
-                <i class="fas fa-camera"></i> 上传照片
-            </button>
+            <!-- 直接跳转到发文章页面，前缀适配 GitHub Pages -->
+            <a href="#" id="uploadBtn" class="btn btn-primary">
+                <i class="fas fa-camera"></i> 发布图文
+            </a>
             <button id="allPhotosBtn" class="btn btn-glass active">
-                <i class="fas fa-images"></i> 全部照片
+                <i class="fas fa-images"></i> 全部图文
             </button>
             <button id="myPhotosBtn" class="btn btn-glass">
-                <i class="fas fa-user"></i> 我的照片
+                <i class="fas fa-user"></i> 我的图文
             </button>
         </div>
 
@@ -269,52 +270,18 @@
 
         <div id="photoGrid" class="photo-grid"></div>
     </div>
-
-    <!-- 上传模态框 -->
-    <div id="uploadModal" class="modal-overlay">
-        <!-- 保持不变 -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-cloud-upload-alt"></i> 上传照片</h3>
-                <button class="modal-close" onclick="closeUploadModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label>照片标题</label>
-                    <input type="text" id="photoTitle" placeholder="给照片起个名字" required>
-                </div>
-                <div class="form-group">
-                    <label>选择照片</label>
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>点击或拖拽照片到这里</p>
-                        <p style="font-size: 0.8rem; color: #999;">支持 JPG、PNG 格式</p>
-                        <img id="previewImg" class="preview-image" style="display: none;">
-                    </div>
-                    <input type="file" id="photoFile" accept="image/*" style="display: none;">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-cancel" onclick="closeUploadModal()">取消</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> 上传</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 图片查看模态框 -->
-    <div id="viewModal" class="view-modal">
-        <span class="view-close" onclick="closeViewModal()"><i class="fas fa-times"></i></span>
-        <img id="viewImage" src="" alt="预览图片">
-    </div>
-
+    
+    
     <script>
         // --- 配置 ---
         const isTestEnv = window.location.pathname.includes('/test/');
         const prefix = isTestEnv ? '/test' : '';
-        const API_URL = "https://kczx.pythonanywhere.com/api/photos"; // 实际对接时需确保后端返回 status 字段
+        const GITHUB_PAGE_BASE = "https://fyk-666.github.io/test/static/articles/html/";
 
-        // --- 状态管理 ---
-        let allPhotos = [];
+        // 核心：请求包含 has_image=1 的文章，status=all 确保能拿到自己的草稿
+        const API_URL = "https://kczx.pythonanywhere.com/api/articles?page_size=100&status=all&has_image=1";
+
+        let allPhotos =[];
         let currentView = 'all'; // 'all' 或 'my'
         let currentUser = null;
 
@@ -359,32 +326,16 @@
             const token = localStorage.getItem('token');
             if (token) currentUser = parseJwt(token);
 
+            // 修改上传按钮跳转路径
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (uploadBtn) uploadBtn.href = prefix + '/article.html';
+
             document.getElementById('searchInp').addEventListener('input', applyFilters);
             document.getElementById('timeSel').addEventListener('change', applyFilters);
             document.getElementById('sortSel').addEventListener('change', applyFilters);
 
-            document.getElementById('uploadBtn').addEventListener('click', openUploadModal);
             document.getElementById('allPhotosBtn').addEventListener('click', () => switchView('all'));
             document.getElementById('myPhotosBtn').addEventListener('click', () => switchView('my'));
-
-            // 上传拖拽事件
-            const uploadArea = document.getElementById('uploadArea');
-            const photoFile = document.getElementById('photoFile');
-            uploadArea.addEventListener('click', () => photoFile.click());
-            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#764ba2'; });
-            uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '#ccc'; });
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault(); uploadArea.style.borderColor = '#ccc';
-                if (e.dataTransfer.files.length) {
-                    photoFile.files = e.dataTransfer.files;
-                    showPreview(e.dataTransfer.files[0]);
-                }
-            });
-            photoFile.addEventListener('change', (e) => {
-                if (e.target.files.length) showPreview(e.target.files[0]);
-            });
-
-            document.getElementById('uploadForm').addEventListener('submit', handleUpload);
 
             await loadPhotos();
         }
@@ -396,56 +347,53 @@
             applyFilters();
         }
 
-        // --- 加载照片 ---
+        // --- 加载数据 ---
         async function loadPhotos() {
             const loading = document.getElementById('loading');
+            loading.style.display = 'block';
             
             try {
-                // 模拟数据：增加了 status 字段（'published' 或 'draft'）
-                allPhotos = [
-                    { id: 1, title: '班级运动会', url: 'https://picsum.photos/400/300?random=1', author: '张三', author_id: 1, status: 'published', created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
-                    { id: 2, title: '春游合影', url: 'https://picsum.photos/400/300?random=2', author: '李四', author_id: 2, status: 'published', created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
-                    { id: 3, title: '别人隐藏的草稿(你看不到)', url: 'https://picsum.photos/400/300?random=3', author: '王五', author_id: 3, status: 'draft', created_at: new Date(Date.now() - 86400000 * 10).toISOString() },
-                    // 生成一条属于当前用户的草稿用于测试
-                    { id: 4, title: '我上传的草稿照片', url: 'https://picsum.photos/400/300?random=4', author: currentUser ? (currentUser.display_name || currentUser.username) : '我', author_id: currentUser ? currentUser.user_id : 999, status: 'draft', created_at: new Date().toISOString() },
-                ];
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('网络请求失败');
+                
+                const data = await response.json();
+                // 后端返回的是 articles，我们直接把它当成 photos 用
+                allPhotos = data.articles ||[];
 
                 loading.style.display = 'none';
                 applyFilters();
             } catch (e) {
                 loading.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 加载失败，请检查网络';
+                console.error(e);
             }
         }
 
-        // --- 核心：应用筛选逻辑 ---
+        // --- 过滤逻辑 ---
         function applyFilters() {
             const searchText = document.getElementById('searchInp').value.toLowerCase();
             const timeFilter = document.getElementById('timeSel').value;
             const sortOrder = document.getElementById('sortSel').value;
 
-            let filtered = allPhotos.filter(photo => {
-                // 1. 判断这张照片是不是“我”的
-                const isMine = currentUser && (photo.author_id === currentUser.user_id || photo.author === currentUser.username);
+            let filtered = allPhotos.filter(article => {
+                // 判断是不是“我”的文章
+                const isMine = currentUser && (String(article.author_id) === String(currentUser.user_id) || article.author === currentUser.username);
 
-                // 2. 视图与权限状态核心逻辑
+                // 视图与权限逻辑
                 if (currentView === 'my') {
-                    // “我的照片”模式：只显示属于我的照片（含已发布和草稿）
-                    if (!isMine) return false;
+                    if (!isMine) return false; // 必须是我的
                 } else {
-                    // “全部照片”模式：看别人的图片仅限于“发布”，看自己的可以是全部
-                    if (!isMine && photo.status !== 'published') {
+                    // 看全部：如果是别人的，必须是已发布的才能看
+                    if (!isMine && article.status !== 'published') {
                         return false; 
                     }
                 }
 
-                // 3. 搜索和时间筛选
-                const matchSearch = photo.title.toLowerCase().includes(searchText);
-                const matchTime = checkTimeMatch(photo.created_at, timeFilter);
+                const matchSearch = article.title.toLowerCase().includes(searchText);
+                const matchTime = checkTimeMatch(article.created_at, timeFilter);
 
                 return matchSearch && matchTime;
             });
 
-            // 排序
             filtered.sort((a, b) => {
                 const timeA = new Date(a.created_at).getTime();
                 const timeB = new Date(b.created_at).getTime();
@@ -455,7 +403,7 @@
             renderPhotos(filtered);
         }
 
-        // --- 渲染照片 ---
+        // --- 渲染卡片 ---
         function renderPhotos(photos) {
             const grid = document.getElementById('photoGrid');
             grid.innerHTML = '';
@@ -464,44 +412,49 @@
                 grid.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
                         <i class="fas fa-images"></i>
-                        <p>${currentView === 'my' ? '您还没有相关的照片' : '暂无照片'}</p>
+                        <p>${currentView === 'my' ? '您还没有发布过带图的文章' : '暂无图文'}</p>
                     </div>
                 `;
                 return;
             }
 
-            photos.forEach(photo => {
+            photos.forEach(article => {
                 const card = document.createElement('div');
                 card.className = 'photo-card';
 
-                const isMine = currentUser && (photo.author_id === currentUser.user_id || photo.author === currentUser.username);
+                const isMine = currentUser && (String(article.author_id) === String(currentUser.user_id) || article.author === currentUser.username);
 
-                // 状态标签生成 (如果是我的草稿，显示黄色的草稿标签；已发布显示绿色)
+                // 状态标签
                 let statusBadge = '';
-                if (photo.status === 'published') {
+                if (article.status === 'published') {
                     statusBadge = `<div class="photo-status status-published">已发布</div>`;
-                } else if (photo.status === 'draft') {
+                } else if (article.status === 'draft') {
                     statusBadge = `<div class="photo-status status-draft">草稿</div>`;
                 }
 
+                // 核心修改：点击图片直接跳到静态 HTML 页面
+                const targetHtmlUrl = `${GITHUB_PAGE_BASE}${article.id}.html`;
+                
+                // 我们通过正则表达式提取的封面图 (在 article.cover_image 中)
+                const coverImgSrc = article.cover_image || 'https://via.placeholder.com/400x300?text=No+Image';
+
                 card.innerHTML = `
                     ${statusBadge}
-                    <img class="photo-image" src="${photo.url}" alt="${photo.title}" 
-                         onclick="viewPhoto('${photo.url}')">
+                    <img class="photo-image" src="${coverImgSrc}" alt="${article.title}" 
+                        onclick="window.open('${targetHtmlUrl}', '_blank')">
+                    
+                    <!-- 如果是自己的，可以提供一个删除按钮，调用文章删除接口 -->
                     ${isMine ? `
-                        <button class="delete-btn" onclick="deletePhoto(event, ${photo.id})" title="删除照片">
+                        <button class="delete-btn" onclick="deleteArticle(event, ${article.id})" title="删除图文">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     ` : ''}
-                    <div class="photo-info">
-                        <div class="photo-title">${photo.title}</div>
+                    
+                    <div class="photo-info" style="cursor: pointer" onclick="window.open('${targetHtmlUrl}', '_blank')">
+                        <div class="photo-title">${article.title}</div>
                         <div class="photo-meta">
-                            <span class="photo-author">
-                                <i class="fas fa-user"></i> ${photo.author}
-                            </span>
-                            <span class="photo-date">
-                                <i class="fas fa-clock"></i> ${getTimeAgo(photo.created_at)}
-                            </span>
+                            <span class="photo-author"><i class="fas fa-user"></i> ${article.author}</span>
+                            <span class="photo-date"><i class="fas fa-clock"></i> ${getTimeAgo(article.created_at)}</span>
                         </div>
                     </div>
                 `;
@@ -510,64 +463,36 @@
             });
         }
 
-        // --- 查看与上传逻辑 (保持不变) ---
-        function viewPhoto(url) {
-            document.getElementById('viewImage').src = url;
-            document.getElementById('viewModal').classList.add('active');
-        }
-
-        function closeViewModal() { document.getElementById('viewModal').classList.remove('active'); }
-
-        function openUploadModal() {
-            if (!currentUser) { alert('请先登录'); window.location.href = prefix + '/login.html'; return; }
-            document.getElementById('uploadModal').classList.add('active');
-        }
-
-        function closeUploadModal() {
-            document.getElementById('uploadModal').classList.remove('active');
-            document.getElementById('uploadForm').reset();
-            document.getElementById('previewImg').style.display = 'none';
-        }
-
-        function showPreview(file) {
-            if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const preview = document.getElementById('previewImg');
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function handleUpload(e) {
-            e.preventDefault();
-            const title = document.getElementById('photoTitle').value.trim();
-            const file = document.getElementById('photoFile').files[0];
-
-            if (!title || !file) { alert('请填写标题并选择照片'); return; }
-
-            alert('模拟上传成功！');
-            // 上传的默认设为已发布 (或者也可以设为草稿，根据你的业务需求)
-            const newPhoto = {
-                id: Date.now(), title: title, url: URL.createObjectURL(file),
-                author: currentUser.display_name || currentUser.username,
-                author_id: currentUser.user_id, status: 'published',
-                created_at: new Date().toISOString()
-            };
-            allPhotos.unshift(newPhoto);
-            closeUploadModal(); applyFilters();
-        }
-
-        async function deletePhoto(event, photoId) {
+        // --- 删除图文 (其实就是删除文章) ---
+        async function deleteArticle(event, articleId) {
             event.stopPropagation();
-            if (!confirm('确定要删除这张照片吗？')) return;
-            allPhotos = allPhotos.filter(p => p.id !== photoId);
-            applyFilters();
+            if (!confirm('确定要删除这篇图文吗？(同步删除文章)')) return;
+
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                // 请求 article.py 中的删除接口
+                const response = await fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || '删除失败');
+                }
+
+                // 从本地数组中移除并刷新视图
+                allPhotos = allPhotos.filter(p => String(p.id) !== String(articleId));
+                applyFilters();
+            } catch (error) {
+                alert(error.message);
+                btn.innerHTML = originalHtml; 
+            }
         }
 
-        document.getElementById('viewModal').addEventListener('click', (e) => { if (e.target === document.getElementById('viewModal')) closeViewModal(); });
-        document.getElementById('uploadModal').addEventListener('click', (e) => { if (e.target === document.getElementById('uploadModal')) closeUploadModal(); });
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>

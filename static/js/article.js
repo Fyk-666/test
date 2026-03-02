@@ -25,14 +25,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 2. 智能跳转函数 ---
-    // 已移至 path-utils.js，这里保留兼容性
+    function smartRedirect(destination) {
+        const baseUrl = window.location.origin;
+        const pathName = window.location.pathname;
+        const targetPage = destination.startsWith('/') ? destination.substring(1) : destination;
+
+        if (pathName.includes('/test/')) {
+            window.location.href = `${baseUrl}/test/${targetPage}`;
+        } else {
+            window.location.href = `${baseUrl}/${targetPage}`;
+        }
+    }
 
     // --- 3. 标签系统逻辑 ---
     let tags = [];
     const keywordMap = {
         '学习': '学习笔记', '作业': '学习笔记', '复习': '学习笔记', '考试': '学习笔记', '笔记': '学习笔记',
         '生活': '生活碎片', '记录': '生活碎片', '日常': '生活碎片', '吃': '生活碎片',
-        '技术': '技术分享', '代码': '技术分享', '编程': '技术分享', '教程': '技 术分享',
+        '技术': '技术分享', '代码': '技术分享', '编程': '技术分享', '教程': '技术分享',
         '活动': '校园活动', '比赛': '校园活动', '社团': '校园活动',
         '总结': '计划总结', '计划': '计划总结', '目标': '计划总结'
     };
@@ -42,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('article-title');
 
     // 添加标签
-    // 在你的 JS 代码中 addTag 函数建议修改如下，增加一些控制：
     window.addTag = function(tagName) {
         tagName = tagName.trim();
         if (!tagName) return;
@@ -59,7 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tags.push(tagName);
         renderTags();
-        document.getElementById('tag-input').value = '';
+        if(document.getElementById('tag-input')) {
+            document.getElementById('tag-input').value = '';
+        }
     };
 
     // 删除标签
@@ -108,13 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
         height: '500px',
         initialEditType: 'markdown',
         previewStyle: 'tab',
-        plugins: [toastui.Editor.plugin.codeSyntaxHighlight],
-        toolbarItems: [
-            ['heading', 'bold', 'italic', 'strike'],
-            ['hr', 'quote'],
-            ['ul', 'ol', 'task', 'indent', 'outdent'],
-            ['table', 'image', 'link'],
-            ['code', 'codeblock'],
+        plugins:[toastui.Editor.plugin.codeSyntaxHighlight],
+        toolbarItems: [['heading', 'bold', 'italic', 'strike'],
+            ['hr', 'quote'],['ul', 'ol', 'task', 'indent', 'outdent'],
+            ['table', 'image', 'link'],['code', 'codeblock'],
             ['scrollSync']
         ],
         hooks: {
@@ -155,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pubBtn) pubBtn.textContent = '更新文章';
     }
 
-    // --- 6. 发布/更新文章 ---
+    // --- 6. 发布/更新文章 (核心修改) ---
     document.getElementById('publish-article').addEventListener('click', function(e) {
         e.preventDefault();
         const title = document.getElementById('article-title').value;
@@ -167,17 +175,33 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 标签必填校验
         if (tags.length === 0) {
             showNotification('请至少选择或输入一个标签', 'error');
             return;
+        }
+
+        // === 自动检测封面图 ===
+        // 匹配 ![alt](https://...) 格式
+        const imgRegex = /!\[.*?\]\((https?:\/\/.*?)\)/i;
+        const match = content.match(imgRegex);
+        
+        let has_image = 0;
+        let cover_image = '';
+
+        if (match && match[1]) {
+            has_image = 1;
+            // 提取纯净URL，去掉可能跟随的标题参数
+            cover_image = match[1].split(' ')[0].trim();
+            console.log("检测到封面图:", cover_image);
         }
 
         const formData = { 
             title, 
             content, 
             status, 
-            tags: tags.join(',') // 将标签数组转为逗号分隔字符串
+            tags: tags.join(','),
+            has_image: has_image,       // 0 或 1
+            cover_image: cover_image    // 图片 URL
         };
 
         const url = articleId
@@ -199,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             showNotification(articleId ? '文章更新成功' : '文章发布成功', 'success');
+            // 发布成功后跳转到文章列表页
             setTimeout(() => smartRedirect('article_list.html'), 1200);
         })
         .catch(error => {
@@ -207,14 +232,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 7. 保存草稿 ---
+    // --- 7. 保存草稿 (同步增加图片检测) ---
     const draftBtn = document.querySelector('.draft-btn');
     if (draftBtn) {
         draftBtn.addEventListener('click', function(e) {
             e.preventDefault();
             const title = document.getElementById('article-title').value;
             const content = editor.getMarkdown();
-            const formData = { title, content, status: 'draft', tags: tags.join(',') };
+
+            if (!title || !content) {
+                showNotification('标题和内容不能为空', 'error');
+                return;
+            }
+
+            // 草稿也进行图片检测
+            const imgRegex = /!\[.*?\]\((https?:\/\/.*?)\)/i;
+            const match = content.match(imgRegex);
+            const has_image = match ? 1 : 0;
+            const cover_image = match && match[1] ? match[1].split(' ')[0].trim() : '';
+
+            const formData = { 
+                title, 
+                content, 
+                status: 'draft', 
+                tags: tags.join(','),
+                has_image: has_image,       
+                cover_image: cover_image    
+            };
+            
             const url = articleId
                 ? `https://kczx.pythonanywhere.com/api/articles/${articleId}`
                 : 'https://kczx.pythonanywhere.com/api/articles';
@@ -228,15 +273,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify(formData)
             })
-            .then(res => res.json())
-            .then(() => showNotification('草稿保存成功', 'success'))
-            .catch(() => showNotification('草稿保存失败', 'error'));
+            .then(res => {
+                if (!res.ok) throw new Error('保存失败');
+                return res.json();
+            })
+            .then(data => {
+                showNotification('草稿保存成功', 'success');
+            })
+            .catch(error => {
+                console.error('保存草稿失败:', error);
+                showNotification('草稿保存失败', 'error');
+            });
         });
     }
 
     // --- 8. 辅助函数 ---
     function loadArticleForEdit(articleId, editor) {
-        // 使用更安全的 fetch 方式
         fetch(`https://kczx.pythonanywhere.com/api/articles/${articleId}/raw-md`, {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }

@@ -1,5 +1,16 @@
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
+    function smartRedirect(destination) {
+        const baseUrl = window.location.origin;
+        const pathName = window.location.pathname;
+        const targetPage = destination.startsWith('/') ? destination.substring(1) : destination;
+
+        if (pathName.includes('/test/')) {
+            window.location.href = `${baseUrl}/test/${targetPage}`;
+        } else {
+            window.location.href = `${baseUrl}/${targetPage}`;
+        }
+    }
     // 获取当前用户信息
     fetchUserProfile();
 

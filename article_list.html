@@ -230,7 +230,11 @@
                 { tag: '其他', icon: 'fa-layer-group', color: '#dfe6e9' } // 兜底分类
             ];
 
-            const GITHUB_PAGE_BASE = "https://fyk-666.github.io/test/static/articles/html/";
+            const isCustomDomain = window.location.hostname === 'kczx.dpdns.org';
+            const GITHUB_PAGE_BASE = isCustomDomain 
+                ? "https://kczx.dpdns.org/static/articles/html/" 
+                : "https://fyk-666.github.io/test/static/articles/html/";
+            
             // 核心 API：获取所有已发布的文章
             const API_URL = "https://kczx.pythonanywhere.com/api/articles?page_size=100&status=published";
 

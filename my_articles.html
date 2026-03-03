@@ -246,8 +246,11 @@
 
     <script>
         const isTestEnv = window.location.pathname.includes('/test/');
+        const isCustomDomain = window.location.hostname === 'kczx.dpdns.org';
         const prefix = isTestEnv ? '/test' : '';
-        const GITHUB_PAGE_BASE = `https://fyk-666.github.io/test/static/articles/html/`;
+        const GITHUB_PAGE_BASE = isCustomDomain 
+            ? "https://kczx.dpdns.org/static/articles/html/" 
+            : `https://fyk-666.github.io/test/static/articles/html/`;
         // 注意：这里请改成你实际的后端地址
         const API_URL = "https://kczx.pythonanywhere.com/api/articles?page_size=100&status=all";
         

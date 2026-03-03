@@ -275,8 +275,11 @@
     <script>
         // --- 配置 ---
         const isTestEnv = window.location.pathname.includes('/test/');
+        const isCustomDomain = window.location.hostname === 'kczx.dpdns.org';
         const prefix = isTestEnv ? '/test' : '';
-        const GITHUB_PAGE_BASE = "https://fyk-666.github.io/test/static/articles/html/";
+        const GITHUB_PAGE_BASE = isCustomDomain 
+            ? "https://kczx.dpdns.org/static/articles/html/" 
+            : "https://fyk-666.github.io/test/static/articles/html/";
 
         // 核心：请求包含 has_image=1 的文章，status=all 确保能拿到自己的草稿
         const API_URL = "https://kczx.pythonanywhere.com/api/articles?page_size=100&status=all&has_image=1";

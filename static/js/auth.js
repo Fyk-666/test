@@ -1,173 +1,109 @@
-// 检查登录状态并更新UI
-async function checkAuth() {
-    try {
+// --- 1. 将智能跳转设为全局函数，防止任何地方报 is not defined ---
+window.smartRedirect = function(destination) {
+    const baseUrl = window.location.origin;
+    const pathName = window.location.pathname;
+    const targetPage = destination.startsWith('/') ? destination.substring(1) : destination;
+
+    if (pathName.includes('/test/')) {
+        window.location.href = `${baseUrl}/test/${targetPage}`;
+    } else {
+        window.location.href = `${baseUrl}/${targetPage}`;
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 2. 检查并显示当前用户 ---
+    async function checkAuth() {
         const token = localStorage.getItem('token');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+
+        // 如果没有 Token，显示登录按钮
         if (!token) {
-            // 未登录时的处理逻辑保持不变
-            if (document.getElementById('loginBtn')) {
-                document.getElementById('loginBtn').style.display = 'inline-block';
-            }
-            if (document.getElementById('registerBtn')) {
-                document.getElementById('registerBtn').style.display = 'inline-block';
-            }
-            if (document.getElementById('logoutBtn')) {
-                document.getElementById('logoutBtn').style.display = 'none';
-            }
-            if (document.getElementById('usernameDisplay')) {
-                document.getElementById('usernameDisplay').textContent = '';
-            }
-            if (document.getElementById('welcomeMessage')) {
-                document.getElementById('welcomeMessage').textContent = '';
-            }
-
-            // 处理 admin.html 页面
-            if (window.location.pathname.includes('admin.html')) {
-                smartRedirect('index.html');
-            }
-
+            if (loginBtn) loginBtn.style.display = 'inline-block';
+            if (registerBtn) registerBtn.style.display = 'inline-block';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (usernameDisplay) usernameDisplay.textContent = '';
+            if (welcomeMessage) welcomeMessage.textContent = '请登录';
             return;
         }
 
-        // 只验证一次令牌
-        const response = await fetch('https://kczx.pythonanywhere.com/api/validate', {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        });
+        try {
+            // 发起验证请求
+            const response = await fetch('https://kczx.pythonanywhere.com/api/current-user', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        const data = await response.json();
-
-        if (data.status === 'success') {
-            // admin 页面增加等级校验：仅 4 级及以上允许访问
-            if (window.location.pathname.includes('admin.html') && Number(data.payload.level) < 4) {
-                smartRedirect('index.html');
+            // 只有在明确是 401 权限错误时才删除 Token
+            if (response.status === 401) {
+                console.warn('Token 已过期或无效，安全清除');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.reload();
                 return;
             }
-            // 已登录，更新页面显示
-            const usernameElement = document.getElementById('usernameDisplay');
-            const userDisplay = data.payload.username;
-            if (usernameElement) {
-                usernameElement.textContent = userDisplay;
-            }
 
-            const welcomeMessage = document.getElementById('welcomeMessage');
-            if (welcomeMessage) {
-                welcomeMessage.textContent = '，欢迎回来';
-            }
+            if (!response.ok) return;
 
-            // 隐藏登录和注册按钮，显示退出按钮
-            if (document.getElementById('loginBtn')) {
-                document.getElementById('loginBtn').style.display = 'none';
-            }
-            if (document.getElementById('registerBtn')) {
-                document.getElementById('registerBtn').style.display = 'none';
-            }
-            if (document.getElementById('logoutBtn')) {
-                document.getElementById('logoutBtn').style.display = 'inline-block';
-            }
-        } else {
-            // 令牌无效，清除令牌并重定向
-            localStorage.removeItem('token');
-            if (document.getElementById('loginBtn')) {
-                document.getElementById('loginBtn').style.display = 'inline-block';
-            }
-            if (document.getElementById('registerBtn')) {
-                document.getElementById('registerBtn').style.display = 'inline-block';
-            }
-            if (document.getElementById('logoutBtn')) {
-                document.getElementById('logoutBtn').style.display = 'none';
-            }
-            if (document.getElementById('usernameDisplay')) {
-                document.getElementById('usernameDisplay').textContent = '';
-            }
-            if (document.getElementById('welcomeMessage')) {
-                document.getElementById('welcomeMessage').textContent = '';
-            }
-
-            // 处理 admin.html 页面
-            if (window.location.pathname.includes('admin.html')) {
-                smartRedirect('index.html');
-            }
-        }
-    } catch (error) {
-        console.error('认证检查失败:', error);
-        // 显示登录和注册按钮
-        if (document.getElementById('loginBtn')) {
-            document.getElementById('loginBtn').style.display = 'inline-block';
-        }
-        if (document.getElementById('registerBtn')) {
-            document.getElementById('registerBtn').style.display = 'inline-block';
-        }
-        if (document.getElementById('logoutBtn')) {
-            document.getElementById('logoutBtn').style.display = 'none';
-        }
-        if (document.getElementById('usernameDisplay')) {
-            document.getElementById('usernameDisplay').textContent = '';
-        }
-        if (document.getElementById('welcomeMessage')) {
-            document.getElementById('welcomeMessage').textContent = '';
-        }
-
-        // 处理 admin.html 页面
-        if (window.location.pathname.includes('admin.html')) {
-            smartRedirect('index.html');
-        }
-    }
-}
-// 显示当前登录用户
-async function displayCurrentUser() {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('https://kczx.pythonanywhere.com/api/current-user', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        if (response.ok) {
+            // 解析后端数据
             const data = await response.json();
 
-            // 使用正确的字段更新UI
-            if (document.getElementById('usernameDisplay')) {
-                document.getElementById('usernameDisplay').textContent = data.display_name;
+            // 更新 UI
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (registerBtn) registerBtn.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'inline-block';
+            
+            if (usernameDisplay) {
+                usernameDisplay.textContent = data.display_name || data.username;
             }
-            if (document.getElementById('current-user')) {
-                document.getElementById('current-user').textContent = data.display_name;
+            if (welcomeMessage) {
+                welcomeMessage.textContent = '，欢迎回来！';
             }
-        } else {
-            console.error('获取当前用户失败:', await response.text());
-        }
-    } catch (error) {
-        console.error('获取当前用户失败:', error);
-    }
-}
 
-// 初始化时检查认证状态
-document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    displayCurrentUser();
-});
-
-// 退出登录
-if (document.getElementById('logoutBtn')) {
-    document.getElementById('logoutBtn').addEventListener('click', async function() {
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                await fetch('https://kczx.pythonanywhere.com/api/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-            }
-            localStorage.removeItem('token');
-            smartRedirect('login.html');
         } catch (error) {
-            console.error('退出登录失败:', error);
-            alert('退出登录失败，请检查网络连接');
+            console.error('前端运行或网络连接出错:', error);
         }
-    });
-}
+    }
 
+    // 页面加载时执行验证
+    checkAuth();
 
+    // --- 3. 退出登录逻辑 (修复报错版) ---
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            
+            // 禁用按钮防止连点
+            logoutBtn.style.pointerEvents = 'none';
+            logoutBtn.textContent = "退出中...";
+
+            if (token) {
+                try {
+                    // 通知后端注销
+                    await fetch('https://kczx.pythonanywhere.com/api/logout', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (err) {
+                    console.log("后端注销请求失败，忽略并强制前端退出...");
+                }
+            }
+            
+            // 无论后端是否响应，前端必须清空数据
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            // 丝滑跳转到登录页，使用全局的 smartRedirect
+            window.smartRedirect('login.html');
+        });
+    }
+});

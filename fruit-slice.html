@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>切水果挑战</title>
+  <style>
+    :root {
+      --bg-top: #071b35;
+      --bg-mid: #0c2f5f;
+      --bg-bottom: #113f7f;
+      --panel-bg: rgba(255, 255, 255, 0.12);
+      --panel-border: rgba(255, 255, 255, 0.35);
+      --text: #ffffff;
+      --text-soft: rgba(255, 255, 255, 0.85);
+      --warn: #ffb442;
+      --danger: #ff5d5d;
+      --ok: #4dd67f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      color: var(--text);
+      font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg-bottom) 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255,255,255,0.22), transparent 32%),
+        radial-gradient(circle at 86% 82%, rgba(255,255,255,0.14), transparent 27%);
+    }
+
+    .page {
+      width: min(1080px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+    }
+
+    .title h1 {
+      font-size: clamp(1.5rem, 4vw, 2.45rem);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .title p {
+      color: var(--text-soft);
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+    }
+
+    .shell {
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .hud-card {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      background: rgba(5, 17, 45, 0.38);
+      padding: 8px 10px;
+    }
+
+    .hud-label {
+      font-size: 0.74rem;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .hud-value {
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    #lifeText.safe { color: var(--ok); }
+    #lifeText.mid { color: var(--warn); }
+    #lifeText.danger { color: var(--danger); }
+
+    .frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      background: rgba(10, 17, 38, 0.4);
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(8, 12, 30, 0.45);
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      text-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+      padding: 12px;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+    }
+
+    .overlay h2 {
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      margin-bottom: 8px;
+    }
+
+    .overlay p {
+      color: var(--text-soft);
+      max-width: 560px;
+      line-height: 1.55;
+      font-size: clamp(0.88rem, 2vw, 1rem);
+    }
+
+    .ctrl {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tips {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+    }
+
+    .btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 15px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .btn:active { transform: translateY(0); }
+    .btn-start { background: linear-gradient(135deg, #3a87ff 0%, #2868ff 100%); }
+    .btn-pause { background: linear-gradient(135deg, #ffbf5a 0%, #ff9f43 100%); }
+    .btn-restart { background: linear-gradient(135deg, #ff7f7f 0%, #ef5350 100%); }
+
+    .status {
+      min-height: 1.4em;
+      margin-top: 8px;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 780px) {
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ctrl {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="title">
+      <h1>切水果挑战</h1>
+      <p>快速切掉水果，躲避炸弹，看你能得多少分！</p>
+    </section>
+
+    <section class="shell">
+      <div class="hud">
+        <div class="hud-card">
+          <div class="hud-label">分数</div>
+          <div class="hud-value" id="scoreText">0</div>
+        </div>
+        <div class="hud-card">
+          <div class="hud-label">连击</div>
+          <div class="hud-value" id="comboText">x0</div>
+        </div>
+        <div class="hud-card">
+          <div class="hud-label">生命</div>
+          <div class="hud-value safe" id="lifeText">3</div>
+        </div>
+        <div class="hud-card">
+          <div class="hud-label">最高分</div>
+          <div class="hud-value" id="bestText">0</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+        <div class="overlay" id="overlay">
+          <h2 id="overlayTitle">准备开切</h2>
+          <p id="overlayDesc">按住并滑动鼠标/手指切水果。切到炸弹会直接失败；漏掉水果会扣生命。</p>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <p class="tips">操作：按住并滑动切割，支持触屏。P 暂停，Enter 在结束后重新开始。</p>
+        <div class="btns">
+          <button class="btn btn-start" id="startBtn">开始游戏</button>
+          <button class="btn btn-pause" id="pauseBtn">暂停</button>
+          <button class="btn btn-restart" id="restartBtn">重新开始</button>
+        </div>
+      </div>
+      <p class="status" id="statusText">点击“开始游戏”进入挑战。</p>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreText = document.getElementById("scoreText");
+    const comboText = document.getElementById("comboText");
+    const lifeText = document.getElementById("lifeText");
+    const bestText = document.getElementById("bestText");
+    const statusText = document.getElementById("statusText");
+    const overlay = document.getElementById("overlay");
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlayDesc = document.getElementById("overlayDesc");
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const GRAVITY = 0.33;
+    const BEST_KEY = "fruit_slice_best_v1";
+    const COLORS = [
+      { shell: "#f44336", flesh: "#ff8a80", name: "apple" },
+      { shell: "#ff9800", flesh: "#ffd180", name: "orange" },
+      { shell: "#7cb342", flesh: "#c5e1a5", name: "kiwi" },
+      { shell: "#ec407a", flesh: "#f8bbd0", name: "dragon" },
+      { shell: "#8e24aa", flesh: "#e1bee7", name: "plum" }
+    ];
+
+    const state = {
+      running: false,
+      paused: false,
+      gameOver: false,
+      score: 0,
+      combo: 0,
+      lives: 3,
+      missed: 0,
+      best: Number(localStorage.getItem(BEST_KEY) || 0),
+      spawnTimer: 0,
+      slashFlash: 0,
+      shake: 0,
+      lastTs: 0
+    };
+
+    const fruits = [];
+    const chunks = [];
+    const particles = [];
+    const slashes = [];
+    const drag = {
+      active: false,
+      x: 0,
+      y: 0,
+      pointerId: null
+    };
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function randInt(min, max) {
+      return Math.floor(rand(min, max + 1));
+    }
+
+    function setOverlay(title, desc, visible) {
+      overlayTitle.textContent = title;
+      overlayDesc.textContent = desc;
+      overlay.classList.toggle("hidden", !visible);
+    }
+
+    function setStatus(text) {
+      statusText.textContent = text;
+    }
+
+    function updateHud() {
+      scoreText.textContent = String(Math.floor(state.score));
+      comboText.textContent = `x${state.combo}`;
+      lifeText.textContent = String(state.lives);
+      bestText.textContent = String(state.best);
+
+      lifeText.className = "hud-value";
+      if (state.lives >= 3) lifeText.classList.add("safe");
+      else if (state.lives === 2) lifeText.classList.add("mid");
+      else lifeText.classList.add("danger");
+    }
+
+    function resetGame() {
+      state.running = false;
+      state.paused = false;
+      state.gameOver = false;
+      state.score = 0;
+      state.combo = 0;
+      state.lives = 3;
+      state.missed = 0;
+      state.spawnTimer = 35;
+      state.slashFlash = 0;
+      state.shake = 0;
+      state.lastTs = 0;
+
+      fruits.length = 0;
+      chunks.length = 0;
+      particles.length = 0;
+      slashes.length = 0;
+      drag.active = false;
+      drag.pointerId = null;
+
+      setOverlay("准备开切", "按住并滑动鼠标/手指切水果。切到炸弹会直接失败；漏掉水果会扣生命。", true);
+      setStatus("点击“开始游戏”进入挑战。");
+      pauseBtn.textContent = "暂停";
+      updateHud();
+    }
+
+    function startGame() {
+      if (state.gameOver) resetGame();
+      if (!state.running) {
+        state.running = true;
+        state.paused = false;
+        setOverlay("", "", false);
+        setStatus("开始切水果！");
+      }
+    }
+
+    function togglePause() {
+      if (!state.running || state.gameOver) return;
+      state.paused = !state.paused;
+      pauseBtn.textContent = state.paused ? "继续" : "暂停";
+      if (state.paused) {
+        setOverlay("已暂停", "点击“继续”或按 P 键恢复。", true);
+        setStatus("游戏暂停中。");
+      } else {
+        setOverlay("", "", false);
+        setStatus("继续切水果！");
+      }
+    }
+
+    function endGame(reason) {
+      state.gameOver = true;
+      state.running = false;
+      if (state.score > state.best) {
+        state.best = Math.floor(state.score);
+        localStorage.setItem(BEST_KEY, String(state.best));
+      }
+      updateHud();
+      setOverlay("挑战结束", "按 Enter 或“重新开始”再来一局。", true);
+      setStatus(reason);
+    }
+
+    function createFruit(isBomb = false) {
+      const x = rand(110, W - 110);
+      const y = H + 60;
+      const speedScale = 1 + Math.min(0.7, state.score / 1400);
+      const vx = rand(-4.2, 4.2) * speedScale;
+      const vy = rand(-16.2, -11.8) * speedScale;
+
+      if (isBomb) {
+        return {
+          kind: "bomb",
+          x,
+          y,
+          vx,
+          vy,
+          r: rand(25, 32),
+          rot: rand(0, Math.PI * 2),
+          vr: rand(-0.14, 0.14)
+        };
+      }
+
+      const theme = COLORS[randInt(0, COLORS.length - 1)];
+      return {
+        kind: "fruit",
+        x,
+        y,
+        vx,
+        vy,
+        r: rand(28, 40),
+        rot: rand(0, Math.PI * 2),
+        vr: rand(-0.11, 0.11),
+        colorA: theme.shell,
+        colorB: theme.flesh
+      };
+    }
+
+    function spawnWave() {
+      const difficulty = clamp(state.score / 2600, 0, 1);
+      const waveCount = randInt(1, difficulty > 0.58 ? 3 : 2);
+      const bombChance = 0.06 + difficulty * 0.2;
+      for (let i = 0; i < waveCount; i += 1) {
+        fruits.push(createFruit(false));
+      }
+      if (Math.random() < bombChance) fruits.push(createFruit(true));
+
+      const minGap = 28 - difficulty * 9;
+      const maxGap = 48 - difficulty * 12;
+      state.spawnTimer = rand(minGap, maxGap);
+    }
+
+    function addSlash(x1, y1, x2, y2) {
+      slashes.push({ x1, y1, x2, y2, life: 0.22 });
+      if (slashes.length > 24) slashes.shift();
+    }
+
+    function makeJuice(x, y, color) {
+      for (let i = 0; i < 18; i += 1) {
+        const a = Math.random() * Math.PI * 2;
+        const speed = rand(1.5, 6.2);
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(a) * speed,
+          vy: Math.sin(a) * speed - rand(0.3, 1.4),
+          life: rand(0.42, 0.8),
+          size: rand(2.5, 6),
+          color
+        });
+      }
+    }
+
+    function makeExplosion(x, y) {
+      for (let i = 0; i < 42; i += 1) {
+        const a = Math.random() * Math.PI * 2;
+        const speed = rand(2.4, 8.8);
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(a) * speed,
+          vy: Math.sin(a) * speed,
+          life: rand(0.48, 1.1),
+          size: rand(2.5, 7.5),
+          color: i % 2 ? "#ffc857" : "#ff5d5d"
+        });
+      }
+    }
+
+    function splitFruit(fruit) {
+      for (let side = -1; side <= 1; side += 2) {
+        chunks.push({
+          x: fruit.x + side * 6,
+          y: fruit.y,
+          vx: fruit.vx + side * rand(1.2, 3.8),
+          vy: fruit.vy - rand(0.4, 1.5),
+          r: fruit.r * rand(0.56, 0.67),
+          rot: fruit.rot,
+          vr: side * rand(0.08, 0.22),
+          life: 1.15,
+          colorA: fruit.colorA,
+          colorB: fruit.colorB
+        });
+      }
+    }
+
+    function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+      const t = clamp(((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy), 0, 1);
+      const sx = x1 + t * dx;
+      const sy = y1 + t * dy;
+      return Math.hypot(px - sx, py - sy);
+    }
+
+    function processSlice(x1, y1, x2, y2) {
+      if (!state.running || state.paused || state.gameOver) return;
+      let slicedCount = 0;
+
+      for (let i = fruits.length - 1; i >= 0; i -= 1) {
+        const f = fruits[i];
+        const d = pointToSegmentDistance(f.x, f.y, x1, y1, x2, y2);
+        if (d > f.r * 0.92) continue;
+
+        if (f.kind === "bomb") {
+          makeExplosion(f.x, f.y);
+          fruits.splice(i, 1);
+          state.shake = 16;
+          endGame("切到炸弹了！挑战失败。");
+          return;
+        }
+
+        slicedCount += 1;
+        splitFruit(f);
+        makeJuice(f.x, f.y, f.colorB);
+        state.score += 10;
+        fruits.splice(i, 1);
+      }
+
+      if (slicedCount > 0) {
+        state.combo += slicedCount;
+        state.slashFlash = 0.12;
+        if (slicedCount > 1) {
+          const bonus = (slicedCount - 1) * 6;
+          state.score += bonus;
+          setStatus(`连切 ${slicedCount} 个！额外 +${bonus} 分`);
+        } else if (state.combo > 0 && state.combo % 10 === 0) {
+          setStatus(`连击 x${state.combo}！`);
+        }
+      } else {
+        state.combo = Math.max(0, state.combo - 1);
+      }
+    }
+
+    function loseLife() {
+      state.lives -= 1;
+      state.combo = 0;
+      state.shake = 9;
+      if (state.lives <= 0) {
+        endGame("漏掉太多水果，生命耗尽。");
+      } else {
+        setStatus(`漏掉水果！剩余生命 ${state.lives}`);
+      }
+    }
+
+    function registerMissedFruit() {
+      state.missed += 1;
+      const progress = state.missed % 5;
+      if (progress === 0) {
+        loseLife();
+        return;
+      }
+      setStatus(`漏切累计 ${progress}/5，满 5 次会扣 1 点生命。`);
+    }
+
+    function updateGame(dt) {
+      if (!state.running || state.paused || state.gameOver) return;
+
+      state.spawnTimer -= dt;
+      if (state.spawnTimer <= 0) spawnWave();
+      state.slashFlash = Math.max(0, state.slashFlash - dt / 22);
+      state.shake = Math.max(0, state.shake - dt * 0.7);
+
+      for (let i = fruits.length - 1; i >= 0; i -= 1) {
+        const f = fruits[i];
+        f.vy += GRAVITY * dt;
+        f.x += f.vx * dt;
+        f.y += f.vy * dt;
+        f.rot += f.vr * dt;
+
+        if (f.x < -90 || f.x > W + 90 || f.y > H + 120) {
+          const isMissedFruit = f.kind === "fruit" && f.y > H + 120;
+          fruits.splice(i, 1);
+          if (isMissedFruit) registerMissedFruit();
+        }
+      }
+
+      for (let i = chunks.length - 1; i >= 0; i -= 1) {
+        const c = chunks[i];
+        c.vy += GRAVITY * 0.9 * dt;
+        c.x += c.vx * dt;
+        c.y += c.vy * dt;
+        c.rot += c.vr * dt;
+        c.life -= dt / 60;
+        if (c.life <= 0 || c.y > H + 140) chunks.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i -= 1) {
+        const p = particles[i];
+        p.vy += GRAVITY * 0.55 * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt / 60;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      for (let i = slashes.length - 1; i >= 0; i -= 1) {
+        slashes[i].life -= dt / 60;
+        if (slashes[i].life <= 0) slashes.splice(i, 1);
+      }
+
+      updateHud();
+    }
+
+    function drawBg() {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#113f7f");
+      g.addColorStop(1, "#061a37");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+
+      for (let i = 0; i < 12; i += 1) {
+        const x = (i * 114 + (performance.now() * 0.02) % 114) % (W + 100) - 50;
+        const y = 52 + (i % 4) * 20;
+        ctx.fillStyle = "rgba(255,255,255,0.08)";
+        ctx.beginPath();
+        ctx.arc(x, y, 26, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 8; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.2 + i * 54);
+        ctx.lineTo(W, H * 0.2 + i * 54 - 24);
+        ctx.stroke();
+      }
+    }
+
+    function drawFruit(f) {
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      ctx.rotate(f.rot);
+
+      if (f.kind === "bomb") {
+        const bombG = ctx.createRadialGradient(-6, -8, 4, 0, 0, f.r);
+        bombG.addColorStop(0, "#6c7078");
+        bombG.addColorStop(1, "#1f2026");
+        ctx.fillStyle = bombG;
+        ctx.beginPath();
+        ctx.arc(0, 0, f.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "#ffcf5c";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, -f.r + 3);
+        ctx.lineTo(0, -f.r - 14);
+        ctx.stroke();
+
+        ctx.fillStyle = Math.random() < 0.35 ? "#fff59d" : "#ff7043";
+        ctx.beginPath();
+        ctx.arc(0, -f.r - 15, 4.3, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const grad = ctx.createRadialGradient(-f.r * 0.3, -f.r * 0.36, 5, 0, 0, f.r);
+        grad.addColorStop(0, f.colorB);
+        grad.addColorStop(1, f.colorA);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, f.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.beginPath();
+        ctx.ellipse(-f.r * 0.2, -f.r * 0.42, f.r * 0.19, f.r * 0.12, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "#6d4c41";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, -f.r + 4);
+        ctx.lineTo(0, -f.r - 9);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawChunk(c) {
+      ctx.save();
+      ctx.globalAlpha = clamp(c.life, 0, 1);
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.rot);
+
+      const grad = ctx.createRadialGradient(-c.r * 0.2, -c.r * 0.2, 5, 0, 0, c.r);
+      grad.addColorStop(0, c.colorB);
+      grad.addColorStop(1, c.colorA);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, c.r, 0, Math.PI);
+      ctx.lineTo(-c.r, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        ctx.globalAlpha = clamp(p.life * 1.2, 0, 1);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawSlashes() {
+      for (const s of slashes) {
+        const alpha = clamp(s.life * 4.2, 0, 1);
+        const grad = ctx.createLinearGradient(s.x1, s.y1, s.x2, s.y2);
+        grad.addColorStop(0, `rgba(255,255,255,${alpha * 0.1})`);
+        grad.addColorStop(0.45, `rgba(125,237,255,${alpha * 0.9})`);
+        grad.addColorStop(1, `rgba(255,255,255,${alpha * 0.1})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 5 + alpha * 3;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(s.x1, s.y1);
+        ctx.lineTo(s.x2, s.y2);
+        ctx.stroke();
+      }
+    }
+
+    function draw() {
+      const sx = state.shake > 0 ? rand(-state.shake, state.shake) : 0;
+      const sy = state.shake > 0 ? rand(-state.shake, state.shake) : 0;
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      drawBg();
+
+      for (const f of fruits) drawFruit(f);
+      for (const c of chunks) drawChunk(c);
+      drawParticles();
+      drawSlashes();
+
+      if (state.slashFlash > 0) {
+        ctx.fillStyle = `rgba(255,255,255,${state.slashFlash * 0.45})`;
+        ctx.fillRect(0, 0, W, H);
+      }
+      ctx.restore();
+    }
+
+    function getCanvasPoint(ev) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: ((ev.clientX - rect.left) / rect.width) * W,
+        y: ((ev.clientY - rect.top) / rect.height) * H
+      };
+    }
+
+    function onPointerDown(ev) {
+      if (!state.running) startGame();
+      if (state.paused || state.gameOver) return;
+      ev.preventDefault();
+      const p = getCanvasPoint(ev);
+      drag.active = true;
+      drag.pointerId = ev.pointerId;
+      drag.x = p.x;
+      drag.y = p.y;
+      canvas.setPointerCapture(ev.pointerId);
+    }
+
+    function onPointerMove(ev) {
+      if (!drag.active || drag.pointerId !== ev.pointerId) return;
+      if (state.paused || state.gameOver) return;
+      ev.preventDefault();
+      const p = getCanvasPoint(ev);
+      const dx = p.x - drag.x;
+      const dy = p.y - drag.y;
+      if (Math.hypot(dx, dy) >= 6) {
+        addSlash(drag.x, drag.y, p.x, p.y);
+        processSlice(drag.x, drag.y, p.x, p.y);
+        drag.x = p.x;
+        drag.y = p.y;
+      }
+    }
+
+    function onPointerUp(ev) {
+      if (drag.pointerId !== ev.pointerId) return;
+      drag.active = false;
+      drag.pointerId = null;
+      try {
+        canvas.releasePointerCapture(ev.pointerId);
+      } catch (_) {}
+    }
+
+    function loop(ts) {
+      if (!state.lastTs) state.lastTs = ts;
+      const dt = Math.min((ts - state.lastTs) / 16.6667, 1.8);
+      state.lastTs = ts;
+
+      updateGame(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    startBtn.addEventListener("click", startGame);
+    pauseBtn.addEventListener("click", togglePause);
+    restartBtn.addEventListener("click", resetGame);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
+    canvas.addEventListener("pointerleave", onPointerUp);
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.code === "KeyP") {
+        togglePause();
+      } else if (ev.code === "Enter" && state.gameOver) {
+        resetGame();
+        startGame();
+      }
+    });
+
+    resetGame();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小游戏中心</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #a855f7;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-bg-hover: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-border-hover: rgba(255, 255, 255, 0.4);
+            --glass-blur: blur(12px);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.85);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --border-radius-sm: 10px;
+            --border-radius-md: 15px;
+            --border-radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top left, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 导航 */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin: 0 5px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #5a5c69;
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: var(--border-radius-sm);
+            transition: 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 头部 */
+        header {
+            background: transparent;
+            padding: 30px 0 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-content h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 3px;
+        }
+
+        .header-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+
+        /* 搜索栏 */
+        .search-section {
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 18px 50px 18px 25px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-box input:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
+        /* 分类标签 */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .category-tab {
+            padding: 10px 25px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-tab:hover,
+        .category-tab.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* 游戏卡片网格 */
+        main {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            padding-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* 游戏卡片 */
+        .game-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .game-card:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-8px);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .game-info {
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .game-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .game-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .game-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .game-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        /* 特色游戏 */
+        .featured-section {
+            margin-bottom: 50px;
+        }
+
+        .featured-games {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .featured-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .featured-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .featured-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .featured-content {
+            padding: 25px;
+            flex-grow: 1;
+        }
+
+        .featured-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .featured-desc {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .featured-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            background: white;
+            color: var(--secondary-color);
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .featured-btn:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1.2rem;
+        }
+
+        /* 页脚 */
+        footer {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: var(--glass-blur);
+            color: white;
+            padding-top: 50px;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            padding-bottom: 30px;
+        }
+
+        .footer-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-info h3 i {
+            color: var(--accent-color);
+        }
+
+        .footer-info p {
+            opacity: 0.8;
+            line-height: 1.7;
+        }
+
+        .footer-links h4,
+        .footer-contact h4 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-links h4::after,
+        .footer-contact h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-contact ul {
+            list-style: none;
+        }
+
+        .footer-contact li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .footer-contact i {
+            color: var(--accent-color);
+            min-width: 20px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header-content h1 {
+                font-size: 2.2rem;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 20px;
+            }
+
+            .featured-games {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-content h1 {
+                font-size: 1.8rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-tabs {
+                gap: 8px;
+            }
+
+            .category-tab {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-card {
+            animation: fadeIn 0.4s ease;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.3rem;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        header {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <a href="index.html" class="back-home" title="返回首页">
+                <i class="fas fa-home"></i>
+            </a>
+            <div class="header-content">
+                <h1>🎮 小游戏中心</h1>
+                <p>精选趣味小游戏，放松身心，享受快乐时光</p>
+            </div>
+
+            <!-- 搜索栏 -->
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索游戏名称...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <!-- 分类标签 -->
+            <div class="category-tabs">
+                <div class="category-tab active" data-category="all">
+                    <i class="fas fa-th"></i> 全部
+                </div>
+                <div class="category-tab" data-category="puzzle">
+                    <i class="fas fa-puzzle-piece"></i> 益智
+                </div>
+                <div class="category-tab" data-category="action">
+                    <i class="fas fa-running"></i> 动作
+                </div>
+                <div class="category-tab" data-category="casual">
+                    <i class="fas fa-coffee"></i> 休闲
+                </div>
+                <div class="category-tab" data-category="rhythm">
+                    <i class="fas fa-music"></i> 音乐
+                </div>
+                <div class="category-tab" data-category="classic">
+                    <i class="fas fa-ghost"></i> 经典
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main>
+        <div class="container">
+            <!-- 特色游戏 -->
+            <section class="featured-section">
+                <h2 class="section-title"><i class="fas fa-fire"></i> 热门推荐</h2>
+                <div class="featured-games">
+                    <div class="featured-card" onclick="playGame('dino')">
+                        <img src="https://via.placeholder.com/400x250/667eea/ffffff?text=Dino+Run" alt="Dino Run" class="featured-cover">
+                        <div class="featured-content">
+                            <h3 class="featured-title">🦕 恐龙快跑</h3>
+                            <p class="featured-desc">经典恐龙跳跃游戏，躲避障碍物，跑得越远分数越高！简单易上手，适合休闲放松。</p>
+                            <a href="dino.html" class="featured-btn">
+                                <i class="fas fa-play"></i> 开始游戏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="featured-card" onclick="playGame('cyberbeat')">
+                        <img src="https://via.placeholder.com/400x250/764ba2/ffffff?text=Cyber+Beat" alt="Cyber Beat" class="featured-cover">
+                        <div class="featured-content">
+                            <h3 class="featured-title">🎵 赛博节拍</h3>
+                            <p class="featured-desc">跟随节拍点击方块，感受未来科技与音乐的完美结合。多种难度级别等你挑战！</p>
+                            <a href="CyberBeat.html" class="featured-btn">
+                                <i class="fas fa-play"></i> 开始游戏
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 游戏列表 -->
+            <section>
+                <h2 class="section-title"><i class="fas fa-gamepad"></i> 更多游戏</h2>
+                <div class="games-grid" id="gamesGrid">
+                    <!-- 游戏卡片将由JS动态生成 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+
+
+    <script>
+        // 游戏数据
+        const gamesData = [
+            {
+                id: 'dino',
+                title: '恐龙快跑',
+                desc: '经典恐龙跳跃游戏，躲避障碍物，跑得越远分数越高！',
+                cover: 'https://via.placeholder.com/300x180/667eea/ffffff?text=Dino',
+                category: 'action',
+                badge: 'hot',
+                plays: 12580,
+                likes: 8920,
+                tags: ['经典', '跑酷']
+            },
+            {
+                id: 'cyberbeat',
+                title: '赛博节拍',
+                desc: '跟随节拍点击方块，感受未来科技与音乐的完美结合。',
+                cover: 'https://via.placeholder.com/300x180/764ba2/ffffff?text=Cyber+Beat',
+                category: 'rhythm',
+                badge: 'new',
+                plays: 8320,
+                likes: 6780,
+                tags: ['音乐', '节奏']
+            },
+            {
+                id: 'puzzle1',
+                title: '方块消除',
+                desc: '经典三消玩法，合成更多方块，获取更高分数。',
+                cover: 'https://via.placeholder.com/300x180/a855f7/ffffff?text=Puzzle',
+                category: 'puzzle',
+                badge: 'popular',
+                plays: 9870,
+                likes: 7650,
+                tags: ['消除', '益智'],
+                link: 'puzzle-match.html'
+            },
+            {
+                id: 'casual1',
+                title: '弹跳小球',
+                desc: '控制小球躲避障碍，收集金币，挑战无限模式。',
+                cover: 'https://via.placeholder.com/300x180/2ecc71/ffffff?text=Ball',
+                category: 'casual',
+                badge: null,
+                plays: 6540,
+                likes: 4320,
+                tags: ['简单', '反应'],
+                link: 'bounce.html'
+            },
+            {
+                id: 'classic1',
+                title: '贪吃蛇',
+                desc: '经典贪吃蛇游戏，吃掉食物让自己变长，不要撞墙！',
+                cover: 'https://via.placeholder.com/300x180/f39c12/ffffff?text=Snake',
+                category: 'classic',
+                badge: 'hot',
+                plays: 15670,
+                likes: 12340,
+                tags: ['经典', '怀旧']
+            },
+            {
+                id: 'action1',
+                title: '跑酷挑战',
+                desc: '收集金币，躲避障碍，成为跑酷达人！',
+                cover: 'https://via.placeholder.com/300x180/e74c3c/ffffff?text=Parkour',
+                category: 'action',
+                badge: null,
+                plays: 7890,
+                likes: 5670,
+                tags: ['跑酷', '挑战'],
+                link: 'parkour-challenge.html'
+            },
+            {
+                id: 'puzzle2',
+                title: '2048',
+                desc: '合并数字方块，达到2048，考验你的策略思维。',
+                cover: 'https://via.placeholder.com/300x180/3498db/ffffff?text=2048',
+                category: 'puzzle',
+                badge: 'popular',
+                plays: 11230,
+                likes: 8970,
+                tags: ['数学', '策略'],
+                link: '2048.html'
+            },
+            {
+                id: 'casual2',
+                title: '切水果',
+                desc: '快速切掉水果，躲避炸弹，看你能得多少分！',
+                cover: 'https://via.placeholder.com/300x180/e91e63/ffffff?text=Fruit',
+                category: 'casual',
+                badge: 'new',
+                plays: 5430,
+                likes: 4210,
+                tags: ['解压', '敏捷'],
+                link: 'fruit-slice.html'
+            },
+            {
+                id: 'card',
+                title: 'Vaporwave Memory',
+                desc: '赛博朋克风格记忆卡片游戏，翻转配对，挑战你的记忆力！',
+                cover: 'https://via.placeholder.com/300x180/ff77ff/ffffff?text=Memory',
+                category: 'puzzle',
+                badge: 'new',
+                plays: 3200,
+                likes: 2890,
+                tags: ['记忆', '配对'],
+                link: 'card.html'
+            }
+        ];
+
+        let currentCategory = 'all';
+        let searchText = '';
+
+        // 初始化
+        function init() {
+            renderGames();
+            setupEventListeners();
+        }
+
+        // 渲染游戏卡片
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            let filteredGames = gamesData;
+
+            // 分类筛选
+            if (currentCategory !== 'all') {
+                filteredGames = filteredGames.filter(game => game.category === currentCategory);
+            }
+
+            // 搜索筛选
+            if (searchText) {
+                filteredGames = filteredGames.filter(game => 
+                    game.title.toLowerCase().includes(searchText.toLowerCase()) ||
+                    game.desc.toLowerCase().includes(searchText.toLowerCase())
+                );
+            }
+
+            if (filteredGames.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-ghost"></i>
+                        <p>暂无找到匹配的游戏</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredGames.map((game, index) => `
+                <div class="game-card" onclick="playGame('${game.id}')" style="animation-delay: ${index * 0.1}s">
+                    <div class="game-info">
+                        <h3 class="game-title">${game.title}</h3>
+                        <p class="game-desc">${game.desc}</p>
+                        <div class="game-meta">
+                            <span><i class="fas fa-play"></i> ${formatNumber(game.plays)}</span>
+                            <span><i class="fas fa-heart"></i> ${formatNumber(game.likes)}</span>
+                        </div>
+                        <div class="game-tags">
+                            ${game.tags.map(tag => `<span class="game-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 格式化数字
+        function formatNumber(num) {
+            if (num >= 10000) {
+                return (num / 10000).toFixed(1) + 'w';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            }
+            return num;
+        }
+
+        // 开始游戏
+        function playGame(gameId) {
+            const game = gamesData.find(g => g.id === gameId);
+            if (game) {
+                if (game.link) {
+                    window.location.href = game.link;
+                } else if (gameId === 'dino') {
+                    window.location.href = 'dino.html';
+                } else if (gameId === 'cyberbeat') {
+                    window.location.href = 'CyberBeat.html';
+                } else {
+                    alert(`即将打开游戏: ${game.title}`);
+                }
+            }
+        }
+
+        // 设置事件监听
+        function setupEventListeners() {
+            // 分类切换
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentCategory = tab.dataset.category;
+                    renderGames();
+                });
+            });
+
+            // 搜索
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchText = e.target.value;
+                renderGames();
+            });
+        }
+
+        // 启动
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

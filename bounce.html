@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹跳小球</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top left, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .game-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 4px;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .game-canvas {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .instructions kbd {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 0 3px;
+        }
+
+        .game-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .overlay-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .overlay-content h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .overlay-content p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .overlay-content .score-text {
+            font-size: 1.5rem;
+            color: #764ba2;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .overlay-content .game-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .game-header h1 {
+                font-size: 2rem;
+            }
+            
+            .back-btn {
+                top: 15px;
+                left: 15px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="games.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> 返回游戏
+    </a>
+
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>弹跳小球</h1>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-item">
+                <div class="stat-label">分数</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">金币</div>
+                <div class="stat-value" id="coins">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">最高分</div>
+                <div class="stat-value" id="best">0</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" class="game-canvas" width="400" height="550"></canvas>
+
+        <div class="game-controls">
+            <button class="game-btn" onclick="startGame()">
+                <i class="fas fa-play"></i> 开始游戏
+            </button>
+        </div>
+
+        <div class="instructions">
+            <kbd>←</kbd> <kbd>→</kbd> 移动 | 空格跳跃 | <kbd>Ctrl</kbd> 按住加速 | 收集金币，躲避红色障碍！
+        </div>
+
+        <div class="game-overlay" id="gameOverlay">
+            <div class="overlay-content">
+                <h2 id="overlayTitle">游戏结束</h2>
+                <p>得分: <span id="finalScore">0</span></p>
+                <p class="score-text">金币: <span id="finalCoins">0</span></p>
+                <button class="game-btn" onclick="startGame()">
+                    <i class="fas fa-redo"></i> 再来一局
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const CANVAS_WIDTH = 400;
+        const CANVAS_HEIGHT = 550;
+        
+        let gameRunning = false;
+        let score = 0;
+        let coins = 0;
+        let bestScore = parseInt(localStorage.getItem('bounce-best')) || 0;
+        
+        let ball = {
+            x: CANVAS_WIDTH / 2,
+            y: CANVAS_HEIGHT - 100,
+            radius: 15,
+            vx: 0,
+            vy: 0,
+            onGround: true
+        };
+        
+        const GRAVITY = 0.35;
+        const JUMP_FORCE = -9;
+        const MOVE_SPEED = 3.5;
+        const BOOST_SPEED = 7;
+        
+        let platforms = [];
+        let obstacles = [];
+        let coinItems = [];
+        let cameraY = 0;
+        let keys = { left: false, right: false, jump: false, boost: false };
+        
+        function initGame() {
+            ball = {
+                x: CANVAS_WIDTH / 2,
+                y: CANVAS_HEIGHT - 100,
+                radius: 15,
+                vx: 0,
+                vy: 0,
+                onGround: true
+            };
+            
+            platforms = [];
+            obstacles = [];
+            coinItems = [];
+            cameraY = 0;
+            score = 0;
+            coins = 0;
+            
+            platforms.push({ x: 0, y: CANVAS_HEIGHT - 30, width: CANVAS_WIDTH, height: 30 });
+            
+            for (let i = 0; i < 10; i++) {
+                createPlatform(CANVAS_HEIGHT - 100 - i * 80);
+            }
+            
+            updateUI();
+        }
+        
+        function createPlatform(y) {
+            const width = 80 + Math.random() * 60;
+            const x = Math.random() * (CANVAS_WIDTH - width);
+            platforms.push({ x, y, width, height: 15 });
+            
+            if (Math.random() < 0.15 && y < CANVAS_HEIGHT - 200) {
+                const obsWidth = 20;
+                const obsX = x + Math.random() * (width - obsWidth);
+                obstacles.push({ x: obsX, y: y - 20, width: obsWidth, height: 20 });
+            }
+            
+            if (Math.random() < 0.4 && y < CANVAS_HEIGHT - 150) {
+                const coinX = x + width / 2;
+                const coinY = y - 30;
+                if (!obstacles.some(o => Math.abs(o.x - coinX) < 30 && Math.abs(o.y - coinY) < 30)) {
+                    coinItems.push({ x: coinX, y: coinY, radius: 10, collected: false });
+                }
+            }
+        }
+        
+        function update() {
+            if (!gameRunning) return;
+            
+            const currentSpeed = keys.boost ? BOOST_SPEED : MOVE_SPEED;
+            if (keys.left) ball.vx = -currentSpeed;
+            else if (keys.right) ball.vx = currentSpeed;
+            else ball.vx *= 0.8;
+            
+            ball.vy += GRAVITY;
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            
+            if (ball.x < ball.radius) ball.x = ball.radius;
+            if (ball.x > CANVAS_WIDTH - ball.radius) ball.x = CANVAS_WIDTH - ball.radius;
+            
+            ball.onGround = false;
+            for (let plat of platforms) {
+                const platScreenY = plat.y - cameraY;
+                if (ball.vy > 0 &&
+                    ball.y + ball.radius > platScreenY &&
+                    ball.y + ball.radius < platScreenY + plat.height + ball.vy &&
+                    ball.x > plat.x &&
+                    ball.x < plat.x + plat.width) {
+                    ball.y = platScreenY - ball.radius;
+                    ball.vy = 0;
+                    ball.onGround = true;
+                }
+            }
+            
+            for (let obs of obstacles) {
+                const obsScreenY = obs.y - cameraY;
+                if (ball.x + ball.radius > obs.x &&
+                    ball.x - ball.radius < obs.x + obs.width &&
+                    ball.y + ball.radius > obsScreenY &&
+                    ball.y - ball.radius < obsScreenY + obs.height) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            for (let coin of coinItems) {
+                if (!coin.collected) {
+                    const coinScreenY = coin.y - cameraY;
+                    const dx = ball.x - coin.x;
+                    const dy = ball.y - coinScreenY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ball.radius + coin.radius) {
+                        coin.collected = true;
+                        coins++;
+                        score += 50;
+                    }
+                }
+            }
+            
+            if (ball.y < CANVAS_HEIGHT / 2) {
+                const diff = CANVAS_HEIGHT / 2 - ball.y;
+                cameraY -= diff;
+                ball.y = CANVAS_HEIGHT / 2;
+                score += Math.floor(diff);
+                
+                const highestPlatform = Math.min(...platforms.map(p => p.y));
+                if (highestPlatform - cameraY > 100) {
+                    createPlatform(highestPlatform - 80);
+                }
+            }
+            
+            platforms = platforms.filter(p => p.y - cameraY < CANVAS_HEIGHT + 100);
+            obstacles = obstacles.filter(o => o.y - cameraY < CANVAS_HEIGHT + 100);
+            coinItems = coinItems.filter(c => c.y - cameraY < CANVAS_HEIGHT + 100 && !c.collected);
+            
+            if (ball.y - cameraY > CANVAS_HEIGHT + 50) {
+                gameOver();
+            }
+            
+            updateUI();
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            for (let plat of platforms) {
+                const y = plat.y - cameraY;
+                ctx.fillStyle = '#8b5cf6';
+                ctx.beginPath();
+                ctx.roundRect(plat.x, y, plat.width, plat.height, 5);
+                ctx.fill();
+                
+                ctx.fillStyle = '#a78bfa';
+                ctx.beginPath();
+                ctx.roundRect(plat.x + 3, y + 3, plat.width - 6, plat.height / 2, 3);
+                ctx.fill();
+            }
+            
+            for (let obs of obstacles) {
+                const y = obs.y - cameraY;
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(obs.x + obs.width / 2, y);
+                ctx.lineTo(obs.x + obs.width, y + obs.height);
+                ctx.lineTo(obs.x, y + obs.height);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.fillStyle = '#fca5a5';
+                ctx.beginPath();
+                ctx.moveTo(obs.x + obs.width / 2, y + 5);
+                ctx.lineTo(obs.x + obs.width - 5, y + obs.height - 3);
+                ctx.lineTo(obs.x + 5, y + obs.height - 3);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            for (let coin of coinItems) {
+                if (!coin.collected) {
+                    const y = coin.y - cameraY;
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, y, coin.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fde68a';
+                    ctx.beginPath();
+                    ctx.arc(coin.x - 3, y - 3, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('$', coin.x, y + 1);
+                }
+            }
+            
+            const gradient = ctx.createRadialGradient(
+                ball.x - 5, ball.y - 5, 0,
+                ball.x, ball.y, ball.radius
+            );
+            gradient.addColorStop(0, '#60a5fa');
+            gradient.addColorStop(1, '#3b82f6');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(ball.x - 5, ball.y - 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if (!gameRunning) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 28px PingFang SC';
+                ctx.textAlign = 'center';
+                ctx.fillText('点击开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            }
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            document.getElementById('gameOverlay').classList.remove('active');
+            initGame();
+            gameRunning = true;
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bounce-best', bestScore);
+            }
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalCoins').textContent = coins;
+            document.getElementById('gameOverlay').classList.add('active');
+        }
+        
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('coins').textContent = coins;
+            document.getElementById('best').textContent = bestScore;
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.key === 'Control') keys.boost = true;
+            if ((e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && ball.onGround) {
+                ball.vy = JUMP_FORCE;
+                ball.onGround = false;
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+            if (e.key === 'Control') keys.boost = false;
+        });
+        
+        canvas.addEventListener('click', () => {
+            if (!gameRunning) startGame();
+        });
+        
+        let touchStartX = 0;
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            if (!gameRunning) startGame();
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touchX = e.touches[0].clientX;
+            const diff = touchX - touchStartX;
+            
+            keys.left = diff < -20;
+            keys.right = diff > 20;
+        });
+        
+        canvas.addEventListener('touchend', () => {
+            keys.left = false;
+            keys.right = false;
+        });
+        
+        document.getElementById('best').textContent = bestScore;
+        initGame();
+        gameLoop();
+    </script>
+</body>
+</html>

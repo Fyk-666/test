@@ -33,11 +33,17 @@
         clearMessage();
 
         const username = document.getElementById('username').value.trim();
+        const phone = document.getElementById('phone').value.trim();
         const email = document.getElementById('email').value.trim();
         const submitBtn = verifyForm.querySelector('button[type="submit"]');
 
-        if (!username || !email) {
-            showMessage('请填写用户名和邮箱。', 'error');
+        if (!username) {
+            showMessage('请填写用户名。', 'error');
+            return;
+        }
+
+        if (!phone && !email) {
+            showMessage('请至少填写手机号或邮箱中的一项。', 'error');
             return;
         }
 
@@ -48,7 +54,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email })
+                body: JSON.stringify({ username, phone, email })
             });
 
             const result = await response.json();

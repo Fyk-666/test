@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>物理/数学单位换算器</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1b2333;
+      --muted: #667085;
+      --primary: #1264ff;
+      --line: #e6e9f2;
+      --ok: #0f9d58;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: linear-gradient(130deg, #eef2ff, #f8fafc 45%, #eef8ff);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .wrap {
+      width: min(920px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+      overflow: hidden;
+    }
+    .head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(120deg, #f8faff, #eef4ff);
+      position: relative;
+    }
+    .back-btn {
+      position: absolute;
+      left: 22px;
+      top: 16px;
+      display: inline-block;
+      text-decoration: none;
+      font-size: 13px;
+      color: #0b4dd6;
+      border: 1px solid #bdd0ff;
+      background: #f2f6ff;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    .back-btn:hover { background: #e9f0ff; }
+    h1 {
+      margin: 24px 0 6px;
+      font-size: 24px;
+    }
+    .desc {
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .full { grid-column: 1 / -1; }
+    .row {
+      display: grid;
+      gap: 8px;
+    }
+    label {
+      font-size: 13px;
+      color: #3e4a63;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d5dcec;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #8db2ff;
+      box-shadow: 0 0 0 3px rgba(18, 100, 255, 0.13);
+    }
+    .result {
+      background: #f7f9ff;
+      border: 1px solid #dde5fb;
+      border-radius: 12px;
+      padding: 14px;
+      line-height: 1.7;
+    }
+    .result .value {
+      font-size: 28px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .muted { color: var(--muted); }
+    .ok { color: var(--ok); }
+    .error {
+      color: #c62828;
+      background: #fff5f5;
+      border: 1px solid #ffd4d4;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    @media (max-width: 740px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <a class="back-btn" href="index.html">返回首页</a>
+      <h1>单位换算器</h1>
+      <p class="desc">无依赖、公式换算。覆盖常见物理/数学单位（长度、质量、时间、面积、体积、速度、力、能量、压力、温度、角度、频率）。</p>
+    </header>
+
+    <section class="grid">
+      <div class="row">
+        <label for="category">分类</label>
+        <select id="category"></select>
+      </div>
+      <div class="row">
+        <label for="inputValue">输入数值</label>
+        <input id="inputValue" type="number" step="any" value="1" />
+      </div>
+      <div class="row">
+        <label for="fromUnit">从</label>
+        <select id="fromUnit"></select>
+      </div>
+      <div class="row">
+        <label for="toUnit">到</label>
+        <select id="toUnit"></select>
+      </div>
+
+      <div class="result full">
+        <div>结果：<span id="result" class="value">-</span></div>
+        <div id="formulaText" class="muted"></div>
+        <div id="baseText" class="muted"></div>
+        <div id="checkText" class="ok"></div>
+      </div>
+
+      <div id="error" class="error full" style="display:none;"></div>
+    </section>
+  </main>
+
+  <script>
+    const CATEGORIES = {
+      length: {
+        label: "长度",
+        base: "米 (m)",
+        units: {
+          m: { label: "米 (m)", k: 1 },
+          km: { label: "千米 (km)", k: 1000 },
+          cm: { label: "厘米 (cm)", k: 0.01 },
+          mm: { label: "毫米 (mm)", k: 0.001 },
+          in: { label: "英寸 (in)", k: 0.0254 },
+          ft: { label: "英尺 (ft)", k: 0.3048 },
+          yd: { label: "码 (yd)", k: 0.9144 },
+          mi: { label: "英里 (mi)", k: 1609.344 }
+        }
+      },
+      mass: {
+        label: "质量",
+        base: "千克 (kg)",
+        units: {
+          kg: { label: "千克 (kg)", k: 1 },
+          g: { label: "克 (g)", k: 0.001 },
+          mg: { label: "毫克 (mg)", k: 0.000001 },
+          t: { label: "吨 (t)", k: 1000 },
+          lb: { label: "磅 (lb)", k: 0.45359237 },
+          oz: { label: "盎司 (oz)", k: 0.028349523125 }
+        }
+      },
+      time: {
+        label: "时间",
+        base: "秒 (s)",
+        units: {
+          s: { label: "秒 (s)", k: 1 },
+          ms: { label: "毫秒 (ms)", k: 0.001 },
+          min: { label: "分钟 (min)", k: 60 },
+          h: { label: "小时 (h)", k: 3600 },
+          day: { label: "天 (day)", k: 86400 }
+        }
+      },
+      area: {
+        label: "面积",
+        base: "平方米 (m²)",
+        units: {
+          m2: { label: "平方米 (m²)", k: 1 },
+          km2: { label: "平方千米 (km²)", k: 1000000 },
+          cm2: { label: "平方厘米 (cm²)", k: 0.0001 },
+          mm2: { label: "平方毫米 (mm²)", k: 0.000001 },
+          ha: { label: "公顷 (ha)", k: 10000 },
+          acre: { label: "英亩 (acre)", k: 4046.8564224 }
+        }
+      },
+      volume: {
+        label: "体积",
+        base: "立方米 (m³)",
+        units: {
+          m3: { label: "立方米 (m³)", k: 1 },
+          L: { label: "升 (L)", k: 0.001 },
+          mL: { label: "毫升 (mL)", k: 0.000001 },
+          cm3: { label: "立方厘米 (cm³)", k: 0.000001 },
+          ft3: { label: "立方英尺 (ft³)", k: 0.028316846592 },
+          gal_us: { label: "美制加仑 (gal)", k: 0.003785411784 }
+        }
+      },
+      speed: {
+        label: "速度",
+        base: "米每秒 (m/s)",
+        units: {
+          mps: { label: "米每秒 (m/s)", k: 1 },
+          kph: { label: "千米每小时 (km/h)", k: 1000 / 3600 },
+          mph: { label: "英里每小时 (mph)", k: 1609.344 / 3600 },
+          knot: { label: "节 (knot)", k: 1852 / 3600 },
+          fps: { label: "英尺每秒 (ft/s)", k: 0.3048 }
+        }
+      },
+      force: {
+        label: "力",
+        base: "牛顿 (N)",
+        units: {
+          N: { label: "牛顿 (N)", k: 1 },
+          kN: { label: "千牛 (kN)", k: 1000 },
+          dyn: { label: "达因 (dyn)", k: 0.00001 },
+          lbf: { label: "磅力 (lbf)", k: 4.4482216152605 }
+        }
+      },
+      energy: {
+        label: "能量",
+        base: "焦耳 (J)",
+        units: {
+          J: { label: "焦耳 (J)", k: 1 },
+          kJ: { label: "千焦 (kJ)", k: 1000 },
+          cal: { label: "卡路里 (cal)", k: 4.184 },
+          kcal: { label: "千卡 (kcal)", k: 4184 },
+          eV: { label: "电子伏特 (eV)", k: 1.602176634e-19 },
+          Wh: { label: "瓦时 (Wh)", k: 3600 },
+          kWh: { label: "千瓦时 (kWh)", k: 3600000 }
+        }
+      },
+      pressure: {
+        label: "压力",
+        base: "帕斯卡 (Pa)",
+        units: {
+          Pa: { label: "帕 (Pa)", k: 1 },
+          kPa: { label: "千帕 (kPa)", k: 1000 },
+          MPa: { label: "兆帕 (MPa)", k: 1000000 },
+          bar: { label: "巴 (bar)", k: 100000 },
+          atm: { label: "标准大气压 (atm)", k: 101325 },
+          psi: { label: "磅每平方英寸 (psi)", k: 6894.757293168 }
+        }
+      },
+      temperature: {
+        label: "温度",
+        base: "开尔文 (K)",
+        affine: true,
+        units: {
+          C: {
+            label: "摄氏度 (°C)",
+            toBase: x => x + 273.15,
+            fromBase: x => x - 273.15,
+            formulaToBase: "K = °C + 273.15",
+            formulaFromBase: "°C = K - 273.15"
+          },
+          K: {
+            label: "开尔文 (K)",
+            toBase: x => x,
+            fromBase: x => x,
+            formulaToBase: "K = K",
+            formulaFromBase: "K = K"
+          },
+          F: {
+            label: "华氏度 (°F)",
+            toBase: x => (x - 32) * 5 / 9 + 273.15,
+            fromBase: x => (x - 273.15) * 9 / 5 + 32,
+            formulaToBase: "K = (°F - 32) × 5/9 + 273.15",
+            formulaFromBase: "°F = (K - 273.15) × 9/5 + 32"
+          }
+        }
+      },
+      angle: {
+        label: "角度",
+        base: "弧度 (rad)",
+        units: {
+          rad: { label: "弧度 (rad)", k: 1 },
+          deg: { label: "角度 (°)", k: Math.PI / 180 },
+          grad: { label: "百分度 (gon)", k: Math.PI / 200 },
+          rev: { label: "圈 (rev)", k: Math.PI * 2 }
+        }
+      },
+      frequency: {
+        label: "频率",
+        base: "赫兹 (Hz)",
+        units: {
+          Hz: { label: "赫兹 (Hz)", k: 1 },
+          kHz: { label: "千赫 (kHz)", k: 1000 },
+          MHz: { label: "兆赫 (MHz)", k: 1000000 },
+          GHz: { label: "吉赫 (GHz)", k: 1000000000 },
+          rpm: { label: "转每分钟 (rpm)", k: 1 / 60 }
+        }
+      }
+    };
+
+    const el = {
+      category: document.getElementById("category"),
+      inputValue: document.getElementById("inputValue"),
+      fromUnit: document.getElementById("fromUnit"),
+      toUnit: document.getElementById("toUnit"),
+      result: document.getElementById("result"),
+      formulaText: document.getElementById("formulaText"),
+      baseText: document.getElementById("baseText"),
+      checkText: document.getElementById("checkText"),
+      error: document.getElementById("error")
+    };
+
+    function fmt(num) {
+      if (!Number.isFinite(num)) return "无效";
+      const abs = Math.abs(num);
+      if ((abs > 0 && abs < 1e-6) || abs >= 1e9) return num.toExponential(8);
+      return num.toLocaleString("zh-CN", { maximumFractionDigits: 12 });
+    }
+
+    function setError(msg = "") {
+      if (msg) {
+        el.error.style.display = "block";
+        el.error.textContent = msg;
+      } else {
+        el.error.style.display = "none";
+        el.error.textContent = "";
+      }
+    }
+
+    function fillCategoryOptions() {
+      for (const [key, meta] of Object.entries(CATEGORIES)) {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = meta.label;
+        el.category.appendChild(opt);
+      }
+      el.category.value = "length";
+    }
+
+    function fillUnitOptions() {
+      const cat = CATEGORIES[el.category.value];
+      const unitEntries = Object.entries(cat.units);
+      el.fromUnit.innerHTML = "";
+      el.toUnit.innerHTML = "";
+      for (const [unitKey, info] of unitEntries) {
+        const o1 = document.createElement("option");
+        o1.value = unitKey;
+        o1.textContent = info.label;
+        const o2 = o1.cloneNode(true);
+        el.fromUnit.appendChild(o1);
+        el.toUnit.appendChild(o2);
+      }
+      el.fromUnit.selectedIndex = 0;
+      el.toUnit.selectedIndex = Math.min(1, unitEntries.length - 1);
+      convert();
+    }
+
+    function convert() {
+      setError();
+      const cat = CATEGORIES[el.category.value];
+      const from = cat.units[el.fromUnit.value];
+      const to = cat.units[el.toUnit.value];
+      const x = Number(el.inputValue.value);
+
+      if (!Number.isFinite(x)) {
+        setError("请输入有效数值。");
+        el.result.textContent = "-";
+        el.formulaText.textContent = "";
+        el.baseText.textContent = "";
+        el.checkText.textContent = "";
+        return;
+      }
+
+      let base;
+      let y;
+      let formula;
+
+      if (cat.affine) {
+        base = from.toBase(x);
+        y = to.fromBase(base);
+        formula = `${from.formulaToBase}；${to.formulaFromBase}`;
+      } else {
+        base = x * from.k;
+        y = base / to.k;
+        formula = `通用公式：目标值 = 输入值 × (k_from / k_to)`;
+      }
+
+      const back = cat.affine ? from.fromBase(to.toBase(y)) : (y * to.k) / from.k;
+      const delta = Math.abs(back - x);
+
+      el.result.textContent = fmt(y);
+      el.formulaText.textContent = `公式：${formula}`;
+      el.baseText.textContent = `基准单位：${cat.base}，中间值 = ${fmt(base)}`;
+      el.checkText.textContent = `反向校验：${fmt(y)} -> ${fmt(back)}（误差 ${fmt(delta)}）`;
+    }
+
+    fillCategoryOptions();
+    fillUnitOptions();
+
+    el.category.addEventListener("change", fillUnitOptions);
+    el.inputValue.addEventListener("input", convert);
+    el.fromUnit.addEventListener("change", convert);
+    el.toUnit.addEventListener("change", convert);
+  </script>
+</body>
+</html>

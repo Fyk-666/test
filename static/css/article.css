@@ -1,102 +1,125 @@
-/* 需要添加在 static/css 目录下 */
 /* 功能：文章发布和管理页面的样式 */
+
+:root {
+    --dark-color: #eaf2ff;
+    --gray-color: #b8c6e8;
+    --primary-color: #7a6cff;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+}
 
 .article-editor {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    border-radius: 22px;
+    background: rgba(10, 14, 28, 0.7);
+    border: 1px solid rgba(122, 170, 255, 0.16);
+    box-shadow: 0 24px 60px rgba(7, 14, 34, 0.45);
 }
 
 .article-editor h2 {
     margin-bottom: 20px;
-    color: var(--dark-color);
+    color: #eaf2ff;
+    font-size: 22px;
+    font-weight: 600;
 }
 
 .editor-toolbar {
-    background-color: #f8f9fc;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
+    background-color: rgba(17, 24, 45, 0.8);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 8px;
 }
 
 .editor-toolbar button {
-    background-color: white;
-    border: 1px solid #e3e6f0;
-    border-radius: 4px;
-    padding: 6px 12px;
+    background-color: rgba(122, 170, 255, 0.12);
+    border: 1px solid rgba(122, 170, 255, 0.25);
+    border-radius: 8px;
+    padding: 8px 14px;
     cursor: pointer;
     transition: all 0.3s;
+    color: #eaf2ff;
+    font-size: 13px;
 }
 
 .editor-toolbar button:hover {
-    background-color: #e9ecef;
+    background-color: rgba(122, 170, 255, 0.2);
 }
 
 .editor-content {
     width: 100%;
     min-height: 400px;
-    border: 1px solid #e3e6f0;
-    border-radius: 5px;
+    border: 1px solid rgba(122, 170, 255, 0.2);
+    border-radius: 10px;
     padding: 15px;
     font-family: 'Courier New', Courier, monospace;
-    background-color: white;
+    background-color: rgba(17, 24, 45, 0.8);
+    color: #eaf2ff;
     resize: vertical;
 }
 
 .editor-controls {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
 }
 
 .editor-controls button {
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 14px;
 }
 
 .publish-btn {
-    background-color: var(--primary-color);
-    color: white;
+    background: linear-gradient(120deg, #6fd3ff, #7a6cff);
+    color: #0a1022;
     border: none;
+    font-weight: 600;
 }
 
 .publish-btn:hover {
-    background-color: #3a56c4;
+    background: linear-gradient(120deg, #7a6cff, #9b6bff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 22, 48, 0.3);
 }
 
 .draft-btn {
-    background-color: #f8f9fc;
-    color: var(--gray-color);
-    border: 1px solid #e3e6f0;
+    background: rgba(122, 170, 255, 0.12);
+    color: #eaf2ff;
+    border: 1px solid rgba(122, 170, 255, 0.25);
 }
 
 .draft-btn:hover {
-    background-color: #e9ecef;
+    background: rgba(122, 170, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 /* 文章预览样式 */
 .article-preview {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    padding: 20px;
+    background: rgba(10, 14, 28, 0.7);
+    border: 1px solid rgba(122, 170, 255, 0.16);
+    border-radius: 16px;
+    padding: 24px;
     margin-top: 30px;
 }
 
 .article-preview h3 {
     margin-bottom: 15px;
-    color: var(--dark-color);
+    color: #eaf2ff;
 }
 
 .preview-content {
     line-height: 1.6;
-    color: var(--gray-color);
+    color: #b8c6e8;
 }
 
 /* 文章列表样式 */
@@ -107,16 +130,16 @@
 }
 
 .article-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background: rgba(10, 14, 28, 0.7);
+    border: 1px solid rgba(122, 170, 255, 0.16);
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
 }
 
 .article-card h3 {
     margin-bottom: 10px;
-    color: var(--dark-color);
+    color: #eaf2ff;
 }
 
 .article-meta {
@@ -124,7 +147,7 @@
     align-items: center;
     gap: 15px;
     margin-bottom: 15px;
-    color: var(--gray-color);
+    color: #b8c6e8;
     font-size: 0.9rem;
 }
 
@@ -136,254 +159,294 @@
 
 .article-actions button {
     padding: 8px 15px;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 13px;
 }
 
 .edit-article-btn {
-    background-color: var(--warning-color);
-    color: white;
-    border: none;
+    background: rgba(241, 196, 15, 0.2);
+    color: #ffeaa7;
+    border: 1px solid rgba(241, 196, 15, 0.4);
 }
 
 .edit-article-btn:hover {
-    background-color: #f5c341;
+    background: rgba(241, 196, 15, 0.3);
 }
 
 .delete-article-btn {
-    background-color: var(--danger-color);
-    color: white;
-    border: none;
+    background: rgba(231, 76, 60, 0.2);
+    color: #ff7675;
+    border: 1px solid rgba(231, 76, 60, 0.4);
 }
 
 .delete-article-btn:hover {
-    background-color: #e23528;
-}
-/* 需要添加在 static/css 目录下 */
-/* 功能：文章发布和管理页面的样式 */
-
-.article-editor {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-top: 20px;
-    margin-bottom: 20px;
+    background: rgba(231, 76, 60, 0.3);
 }
 
-.article-editor h2 {
-    margin-bottom: 20px;
-    color: var(--dark-color);
-}
-
-.editor-toolbar {
-    background-color: #f8f9fc;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.editor-toolbar button {
-    background-color: white;
-    border: 1px solid #e3e6f0;
-    border-radius: 4px;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.editor-toolbar button:hover {
-    background-color: #e9ecef;
-}
-
-.editor-content {
-    width: 100%;
-    min-height: 400px;
-    border: 1px solid #e3e6f0;
-    border-radius: 5px;
-    padding: 15px;
-    font-family: 'Courier New', Courier, monospace;
-    background-color: white;
-    resize: vertical;
-}
-
+/* 表单样式 */
 .article-form {
     margin-top: 20px;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 500;
+    color: #b8c6e8;
+    font-size: 14px;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e3e6f0;
-    border-radius: 4px;
+    padding: 12px 15px;
+    border: 1px solid rgba(122, 170, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(17, 24, 45, 0.8);
+    color: #eaf2ff;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-group input::placeholder {
+    color: rgba(184, 198, 232, 0.5);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: rgba(122, 170, 255, 0.4);
+}
+
+.form-group select option {
+    background: #0f152b;
+    color: #eaf2ff;
 }
 
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
 }
 
 .form-actions button {
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 999px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 22, 48, 0.3);
 }
 
 .draft-btn {
-    background-color: #f8f9fc;
-    color: var(--gray-color);
-    border: 1px solid #e3e6f0;
-}
-
-.draft-btn:hover {
-    background-color: #e9ecef;
+    background: rgba(122, 170, 255, 0.12);
+    color: #eaf2ff;
+    border: 1px solid rgba(122, 170, 255, 0.25);
 }
 
 .publish-btn {
-    background-color: var(--primary-color);
-    color: white;
+    background: linear-gradient(120deg, #6fd3ff, #7a6cff);
+    color: #0a1022;
     border: none;
+    font-weight: 600;
 }
 
-.publish-btn:hover {
-    background-color: #3a56c4;
+/* Toast-UI Editor 样式覆盖 */
+.toastui-editor-defaultUI {
+    border: 1px solid rgba(122, 170, 255, 0.2) !important;
+    border-radius: 12px !important;
+    background: rgba(17, 24, 45, 0.8) !important;
 }
 
-/* Markdown编辑器样式覆盖 */
-.easymde-container {
-    border: none;
+.toastui-editor-defaultUI > .toastui-editor-main {
+    background: rgba(17, 24, 45, 0.8) !important;
 }
 
-.easymde-textarea {
-    min-height: 400px !important;
+.toastui-editor .toastui-editor-md-container .toastui-editor-md-preview {
+    background: rgba(17, 24, 45, 0.8) !important;
+    color: #eaf2ff !important;
 }
 
-.easymde-toolbar {
-    background-color: #f8f9fc;
-    border-radius: 5px 5px 0 0 !important;
+.toastui-editor .toastui-editor-md-container .toastui-editor-md-sandbox {
+    background: rgba(17, 24, 45, 0.8) !important;
+    color: #eaf2ff !important;
 }
 
-.easymde-toolbar button {
-    background: none !important;
-    border: none !important;
-    padding: 8px 12px !important;
-    margin: 0 2px !important;
+.toastui-editor .toastui-editor-write {
+    background: rgba(17, 24, 45, 0.8) !important;
 }
 
-.easymde-preview {
-    background-color: white;
-    padding: 15px;
-    border-radius: 0 0 5px 5px;
-    border: 1px solid #e3e6f0;
-    border-top: none;
+.toastui-editor .toastui-editor-write > .toastui-editor-section > .toastui-editor-contents {
+    color: #eaf2ff !important;
 }
 
-/* 1. 修复标签堆叠问题 */
+.toastui-editor-defaultUI-toolbar {
+    background: rgba(17, 24, 45, 0.9) !important;
+    border-bottom: 1px solid rgba(122, 170, 255, 0.2) !important;
+}
+
+.toastui-editor-toolbar {
+    background: rgba(17, 24, 45, 0.9) !important;
+}
+
+.toastui-editor-toolbar button {
+    color: #b8c6e8 !important;
+}
+
+.toastui-editor-toolbar button:hover {
+    background: rgba(122, 170, 255, 0.2) !important;
+}
+
+.toastui-editor-popup {
+    background: rgba(10, 14, 28, 0.95) !important;
+    border: 1px solid rgba(122, 170, 255, 0.2) !important;
+}
+
+.toastui-editor-popup-body input {
+    background: rgba(17, 24, 45, 0.8) !important;
+    border: 1px solid rgba(122, 170, 255, 0.2) !important;
+    color: #eaf2ff !important;
+}
+
+.toastui-editor-dropdown-toolbar {
+    background: rgba(10, 14, 28, 0.95) !important;
+    border: 1px solid rgba(122, 170, 255, 0.2) !important;
+}
+
+/* 标签区域样式 */
+.tag-section-glass {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(10, 14, 28, 0.7);
+    border: 1px solid rgba(122, 170, 255, 0.16);
+    border-radius: 16px;
+}
+
 .tag-input-wrapper {
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* 允许换行，但后面会限制 badge 的布局 */
-    gap: 8px;
-    padding: 8px 15px;
-    background: rgba(255, 255, 255, 0.08); /* 如果你背景是白的，这里要调深 */
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(17, 24, 45, 0.8);
+    border: 1px solid rgba(122, 170, 255, 0.2);
     border-radius: 12px;
     min-height: 50px;
 }
 
+.tag-icon {
+    color: #6fd3ff;
+    font-size: 16px;
+    margin-right: 4px;
+}
+
 #selected-tags {
     display: flex;
-    flex-wrap: wrap; /* 确保标签横向排列 */
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .tag-badge {
-    display: inline-flex !important; /* 强制横向显示 */
+    display: inline-flex !important;
     align-items: center;
-    white-space: nowrap; /* 禁止标签内的文字换行 */
-    background: linear-gradient(135deg, #6a87c4 0%, #202e72 100%);
-    color: white;
+    white-space: nowrap;
+    background: linear-gradient(135deg, #6fd3ff, #7a6cff);
+    color: #0a1022;
     padding: 5px 12px;
     border-radius: 8px;
-    font-size: 0.85rem;
+    font-size: 13px;
+    font-weight: 500;
     gap: 6px;
 }
 
-/* 2. 修复推荐标签看不见的问题 */
+.tag-badge i {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.tag-badge i:hover {
+    opacity: 1;
+}
+
+.tag-input-wrapper input {
+    flex: 1;
+    min-width: 150px;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: #eaf2ff;
+    font-size: 14px;
+    outline: none;
+}
+
+.tag-input-wrapper input::placeholder {
+    color: rgba(184, 198, 232, 0.5);
+}
+
 .preset-tags-container {
-    margin-top: 15px;
-    padding: 10px;
+    margin-top: 16px;
+    padding: 12px;
 }
 
 .preset-label {
-    color: #666; /* 改成深色，确保白色背景可见 */
-    font-size: 0.85rem;
-    margin-bottom: 8px;
+    color: #b8c6e8;
+    font-size: 13px;
+    margin-bottom: 10px;
     display: block;
 }
 
 .preset-tags-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
 }
 
 .preset-chip {
-    /* 这里的颜色改为有颜色的背景，或者深色文字 */
-    background: rgba(102, 126, 234, 0.1); 
-    color: #667eea; 
-    border: 1px solid rgba(102, 126, 234, 0.3);
+    background: rgba(122, 170, 255, 0.1);
+    color: #6fd3ff;
+    border: 1px solid rgba(122, 170, 255, 0.25);
     padding: 6px 14px;
-    border-radius: 15px;
-    font-size: 0.85rem;
+    border-radius: 20px;
+    font-size: 13px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
 }
 
 .preset-chip:hover {
-    background: #667eea;
-    color: white; /* 悬停时变蓝底白字 */
+    background: rgba(122, 170, 255, 0.2);
     transform: translateY(-2px);
 }
 
-/* 3. 修复底部通知栏样式 */
+/* 通知样式 */
 .notification-container {
     position: fixed;
-    bottom: 20px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999;
 }
 
 .notification {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 12px 25px;
-    border-radius: 50px;
+    background: rgba(10, 14, 28, 0.95);
+    border: 1px solid rgba(122, 170, 255, 0.25);
+    color: #eaf2ff;
+    padding: 14px 28px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(7, 14, 34, 0.4);
     opacity: 0;
     transition: all 0.3s;
 }
@@ -393,7 +456,37 @@
     transform: translateY(-10px);
 }
 
-.notification.error {
-    background: #6947ff;
+.notification.success {
+    border-color: rgba(46, 204, 113, 0.4);
 }
 
+.notification.error {
+    border-color: rgba(231, 76, 60, 0.4);
+    background: rgba(231, 76, 60, 0.2);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .article-editor {
+        padding: 16px;
+        margin: 16px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .preset-tags-list {
+        gap: 8px;
+    }
+
+    .preset-chip {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+}

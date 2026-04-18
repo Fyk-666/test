@@ -9,199 +9,699 @@
     <script src="static/js/auth.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background:
+                radial-gradient(circle at top left, rgba(29, 155, 240, 0.15), transparent 28%),
+                radial-gradient(circle at top right, rgba(120, 119, 198, 0.12), transparent 30%),
+                linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+            color: #f5f7fa;
         }
-        
-        /* --- 聊天页面特定样式 --- */
+
         .chat-page {
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px 0;
+            align-items: stretch;
+            padding: 28px 20px 34px;
         }
-        
-        /* --- 主容器 --- */
+
         .chat-container {
-            width: 95%; max-width: 1100px; height: 85vh;
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
+            width: min(1240px, 100%);
+            height: calc(100vh - 126px);
+            min-height: 640px;
             display: flex;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             overflow: hidden;
+            position: relative;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 15, 22, 0.76);
+            box-shadow:
+                0 30px 70px rgba(0, 0, 0, 0.38),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(28px);
+        }
+
+        .chat-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 34%, transparent 68%, rgba(255, 255, 255, 0.03));
+        }
+
+        .user-list-panel {
+            width: 330px;
+            display: flex;
+            flex-direction: column;
+            background:
+                linear-gradient(180deg, rgba(14, 20, 28, 0.98), rgba(9, 13, 18, 0.97)),
+                rgba(14, 20, 28, 0.96);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.3s ease;
+            z-index: 2;
+        }
+
+        .panel-header {
+            padding: 24px 22px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+        }
+
+        .panel-label {
+            font-size: 0.74rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(139, 152, 165, 0.78);
+            margin-bottom: 12px;
+        }
+
+        .panel-title-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.22rem;
+            font-weight: 700;
+            color: #f5f7fa;
+        }
+
+        .panel-title i {
+            color: #1d9bf0;
+        }
+
+        .panel-subtitle {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            color: rgba(139, 152, 165, 0.9);
+        }
+
+        .panel-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 8px;
+            background: #1d9bf0;
+            box-shadow: 0 0 0 6px rgba(29, 155, 240, 0.12);
+            flex-shrink: 0;
+        }
+
+        .search-box {
             position: relative;
         }
 
-        /* --- 左侧用户列表 --- */
-        .user-list-panel {
-            width: 280px;
-            background: #f7f7f7;
-            border-right: 1px solid #e0e0e0;
-            display: flex; flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-        .panel-header { padding: 20px; background: #f7f7f7; }
-        .search-box { position: relative; }
         .search-box input {
-            width: 100%; padding: 10px 30px 10px 12px;
-            border: 1px solid #ddd; border-radius: 8px;
-            background: #e9e9e9; outline: none; font-size: 0.95rem;
+            width: 100%;
+            padding: 12px 42px 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            background: rgba(21, 27, 35, 0.95);
+            color: #f5f7fa;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
-        .search-box input:focus { background: white; border-color: #667eea; }
-        .search-box i { position: absolute; right: 10px; top: 12px; color: #999; }
 
-        .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        
-        /* 新增: 设为相对定位，作为红点的基准 */
-        .user-item {
-            padding: 15px; cursor: pointer;
-            display: flex; align-items: center; gap: 12px;
-            border-bottom: 1px solid #f0f0f0;
-            background: #fff;
-            position: relative; 
+        .search-box input::placeholder {
+            color: rgba(139, 152, 165, 0.85);
         }
-        .user-item:active { background: #eef2ff; }
-        .user-item.active { background: #dce4ff; border-left: 4px solid #667eea; }
-        
-        .user-avatar {
-            width: 45px; height: 45px; background: #ddd; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; color: #fff; font-weight: bold; flex-shrink: 0;
-            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
-        }
-        
-        .user-info { flex: 1; min-width: 0; }
-        .user-name { font-weight: 600; font-size: 0.95rem; color: #333; }
-        .user-role { font-size: 0.75rem; color: #999; margin-top: 2px; }
 
-        /* --- 新增：未读消息红点徽章 --- */
-        .unread-badge {
+        .search-box input:focus {
+            border-color: rgba(29, 155, 240, 0.8);
+            box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.12);
+            background: rgba(17, 22, 29, 1);
+        }
+
+        .search-box i {
             position: absolute;
-            right: 15px;
+            right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            background: #ff4757;
-            color: white;
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 2px 7px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; /* 防止遮挡点击事件 */
+            color: rgba(139, 152, 165, 0.72);
+        }
+
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 12px;
+        }
+
+        .user-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 15px 16px;
+            margin-bottom: 8px;
+            border-radius: 22px;
+            border: 1px solid transparent;
+            background: transparent;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .user-item:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .user-item:active {
+            transform: scale(0.99);
+        }
+
+        .user-item.active {
+            background: linear-gradient(135deg, rgba(29, 155, 240, 0.16), rgba(29, 155, 240, 0.08));
+            border-color: rgba(29, 155, 240, 0.36);
+            box-shadow: inset 0 0 0 1px rgba(29, 155, 240, 0.16);
+        }
+
+        .user-item.active::before {
+            content: "";
+            position: absolute;
+            left: -2px;
+            top: 18%;
+            bottom: 18%;
+            width: 4px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #1d9bf0, #60c5ff);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #1d9bf0, #7856ff);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.98rem;
+            color: #f5f7fa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-handle {
+            font-size: 0.76rem;
+            color: rgba(139, 152, 165, 0.92);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .user-role {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: rgba(139, 152, 165, 0.92);
+        }
+
+        .unread-badge {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            min-width: 22px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #1d9bf0;
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(29, 155, 240, 0.25);
+            animation: popIn 0.25s ease;
+            pointer-events: none;
         }
 
         @keyframes popIn {
-            0% { transform: translateY(-50%) scale(0); opacity: 0; }
-            100% { transform: translateY(-50%) scale(1); opacity: 1; }
+            from { transform: translateY(-50%) scale(0.6); opacity: 0; }
+            to { transform: translateY(-50%) scale(1); opacity: 1; }
         }
 
-        /* --- 右侧聊天窗口 --- */
-        .chat-window { 
-            flex: 1; display: flex; flex-direction: column; background: #fff; 
+        .chat-window {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(circle at top, rgba(29, 155, 240, 0.06), transparent 28%),
+                linear-gradient(180deg, rgba(10, 14, 20, 0.88), rgba(6, 10, 15, 0.96));
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 15, 22, 0.8);
+            backdrop-filter: blur(18px);
+            z-index: 10;
+        }
+
+        #mobileBackBtn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            color: #f5f7fa;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .chat-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             min-width: 0;
         }
-        .chat-header {
-            padding: 15px; border-bottom: 1px solid #eee;
-            font-weight: bold; font-size: 1.1rem; color: #333;
-            display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10;
+
+        .chat-presence {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #00ba7c;
+            box-shadow: 0 0 0 5px rgba(0, 186, 124, 0.12);
+            flex-shrink: 0;
         }
-        
-        #mobileBackBtn { display: none; font-size: 1.2rem; color: #667eea; padding: 5px; cursor: pointer; }
+
+        .chat-title-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        #chatHeaderTitle {
+            font-size: 1.04rem;
+            font-weight: 700;
+            color: #f5f7fa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #chatHeaderMeta {
+            margin-top: 3px;
+            font-size: 0.78rem;
+            color: rgba(139, 152, 165, 0.9);
+        }
 
         .messages-area {
-            flex: 1; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            background: #f5f5f5; 
-            display: flex; flex-direction: column; gap: 10px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 24px;
+            background:
+                linear-gradient(180deg, rgba(13, 17, 23, 0.52), rgba(8, 11, 16, 0.8)),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: auto, 18px 18px;
         }
 
-        /* --- 气泡样式 --- */
+        .empty-state {
+            margin: auto;
+            width: min(420px, 100%);
+            text-align: center;
+            padding: 34px 30px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 20, 28, 0.82);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .empty-state.compact {
+            max-width: 320px;
+            padding: 26px 24px;
+        }
+
+        .empty-state-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #f5f7fa;
+            background: linear-gradient(135deg, rgba(29, 155, 240, 0.9), rgba(120, 86, 255, 0.9));
+            box-shadow: 0 16px 32px rgba(29, 155, 240, 0.22);
+        }
+
+        .empty-state h3 {
+            font-size: 1.22rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #f5f7fa;
+        }
+
+        .empty-state p {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: rgba(139, 152, 165, 0.94);
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 4px 0 10px;
+        }
+
+        .date-divider span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(139, 152, 165, 0.96);
+            font-size: 0.76rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
         .message-bubble {
-            max-width: 85%; padding: 10px 14px; border-radius: 12px;
-            font-size: 1rem; line-height: 1.5; position: relative;
-            word-wrap: break-word; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            max-width: min(74%, 620px);
+            position: relative;
+            padding: 14px 16px 12px;
+            border-radius: 24px;
+            font-size: 0.98rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
         }
-        .msg-content-text { white-space: pre-wrap; display: block; margin-bottom: 4px; }
-        
-        .msg-left { align-self: flex-start; background: #ffffff; color: #333; border: 1px solid #ededed; border-bottom-left-radius: 2px; }
-        .msg-right { align-self: flex-end; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-bottom-right-radius: 2px; }
 
-        /* 日期分割线 */
-        .date-divider { text-align: center; margin: 15px 0; }
-        .date-divider span { background: rgba(0,0,0,0.1); color: #666; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; }
+        .msg-content-text {
+            display: block;
+            white-space: pre-wrap;
+            margin-bottom: 6px;
+        }
 
-        /* 消息状态 */
-        .msg-meta { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 0.7rem; opacity: 0.8; }
-        .msg-left .msg-meta { justify-content: flex-start; color: #999; }
-        .msg-right .msg-meta { color: rgba(255,255,255,0.9); }
-        .msg-time { cursor: pointer; border-bottom: 1px dotted transparent; }
-        .msg-time:hover { border-bottom-color: currentColor; }
+        .msg-left {
+            align-self: flex-start;
+            background: rgba(25, 31, 39, 0.92);
+            color: #f5f7fa;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-bottom-left-radius: 10px;
+        }
 
-        /* 悬浮按钮区 */
+        .msg-right {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #1d9bf0 0%, #1171bb 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 10px;
+        }
+
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+            font-size: 0.72rem;
+            opacity: 0.9;
+        }
+
+        .msg-left .msg-meta {
+            justify-content: flex-start;
+            color: rgba(139, 152, 165, 0.92);
+        }
+
+        .msg-right .msg-meta {
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .msg-time {
+            cursor: pointer;
+            border-bottom: 1px dotted transparent;
+        }
+
+        .msg-time:hover {
+            border-bottom-color: currentColor;
+        }
+
         .copy-btn, .recall-btn {
-            position: absolute; top: -20px; opacity: 0; pointer-events: none;
-            color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; transition: 0.2s; cursor: pointer;
+            position: absolute;
+            top: -14px;
+            opacity: 0;
+            pointer-events: none;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            transition: 0.18s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
         }
-        .copy-btn { background: #333; right: 10px; }
-        .recall-btn { background: #ff4757; right: 50px; }
-        .message-bubble:hover .copy-btn, .message-bubble:hover .recall-btn { opacity: 1; pointer-events: auto; top: -25px; }
 
-        .msg-status { font-size: 0.7rem; }
-        .msg-status.read { color: #54a0ff; }
-        .msg-status.sent { color: rgba(255,255,255,0.7); }
-        .retry-btn { color: #ff4757; cursor: pointer; font-weight: bold; margin-right: 5px; background: white; padding: 2px 6px; border-radius: 4px; }
+        .copy-btn {
+            right: 10px;
+            background: rgba(15, 20, 28, 0.88);
+            color: #f5f7fa;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-        /* --- 底部输入区 --- */
+        .recall-btn {
+            right: 66px;
+            background: rgba(255, 77, 79, 0.14);
+            color: #ff8b8b;
+            border: 1px solid rgba(255, 77, 79, 0.2);
+        }
+
+        .message-bubble:hover .copy-btn,
+        .message-bubble:hover .recall-btn {
+            top: -18px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .msg-status {
+            font-size: 0.76rem;
+        }
+
+        .msg-status.read {
+            color: #b4ecff;
+        }
+
+        .msg-status.sent {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .retry-btn {
+            color: #ff5c5c;
+            cursor: pointer;
+            font-weight: 700;
+            margin-right: 6px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
         .input-area {
-            padding: 10px; border-top: 1px solid #eee; background: white;
-            display: flex; gap: 10px; align-items: flex-end;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 18px 24px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(9, 13, 18, 0.84);
         }
+
         .textarea-wrapper {
-            flex: 1; background: #f5f5f5; border-radius: 20px;
-            padding: 10px 15px; border: 1px solid #e0e0e0;
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(18, 24, 31, 0.96);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
+        .textarea-wrapper:focus-within {
+            border-color: rgba(29, 155, 240, 0.72);
+            box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.12);
+        }
+
         #msgInput {
-            width: 100%; border: none; background: transparent; outline: none;
-            resize: none; font-size: 1rem; line-height: 1.4; max-height: 100px;
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            color: #f5f7fa;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            font-family: inherit;
         }
+
+        #msgInput::placeholder {
+            color: rgba(139, 152, 165, 0.85);
+        }
+
         #sendBtn {
-            width: 70px; height: 42px; border-radius: 20px; border: none;
-            background: #667eea; color: white; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
+            width: 52px;
+            height: 52px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1d9bf0, #46b7ff);
+            color: #ffffff;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 16px 28px rgba(29, 155, 240, 0.25);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
         }
-        @media (hover: hover) { #sendBtn:hover { background: #5a6fd6; transform: scale(1.05); } }
-        #sendBtn:active { background: #4a5db6; transform: scale(0.95); }
-        #sendBtn:disabled { background: #e0e0e0; color: #999; transform: none; }
 
-        /* 滚动条美化 */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+        @media (hover: hover) {
+            #sendBtn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 20px 34px rgba(29, 155, 240, 0.32);
+            }
+        }
 
-        /* --- 移动端响应式布局 --- */
+        #sendBtn:active {
+            transform: scale(0.96);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.45;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: rgba(139, 152, 165, 0.26);
+        }
+
+        @media (max-width: 960px) {
+            .chat-page {
+                padding: 16px 12px 20px;
+            }
+
+            .chat-container {
+                height: calc(100vh - 98px);
+                min-height: auto;
+                border-radius: 24px;
+            }
+
+            .user-list-panel {
+                width: 300px;
+            }
+
+            .message-bubble {
+                max-width: 82%;
+            }
+        }
+
         @media (max-width: 768px) {
-            .chat-container { width: 100%; height: 100%; border-radius: 0; }
-            .user-list-panel { width: 100%; display: flex; }
-            .chat-window { display: none; width: 100%; }
-            .chat-container.chat-active .user-list-panel { display: none; }
-            .chat-container.chat-active .chat-window { display: flex; }
-            #mobileBackBtn { display: block; }
-            .message-bubble { max-width: 85%; }
-            .input-area { padding: 8px; }
+            .chat-page {
+                padding: 0;
+            }
+
+            .chat-container {
+                width: 100%;
+                height: calc(100vh - 72px);
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .user-list-panel {
+                width: 100%;
+                display: flex;
+            }
+
+            .chat-window {
+                display: none;
+                width: 100%;
+            }
+
+            .chat-container.chat-active .user-list-panel {
+                display: none;
+            }
+
+            .chat-container.chat-active .chat-window {
+                display: flex;
+            }
+
+            #mobileBackBtn {
+                display: inline-flex;
+            }
+
+            .chat-header,
+            .messages-area,
+            .input-area {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .panel-header {
+                padding: 20px 16px 16px;
+            }
+
+            .messages-area {
+                padding-top: 18px;
+                padding-bottom: 18px;
+            }
+
+            .input-area {
+                padding-top: 14px;
+                padding-bottom: 16px;
+            }
+
+            .message-bubble {
+                max-width: 88%;
+                border-radius: 22px;
+            }
         }
     </style>
 </head>
 <body>
-
-    <!-- 导航栏 -->
     <nav>
         <div class="container nav-container">
             <a href="index.html" class="logo">
@@ -212,7 +712,7 @@
                 <li><a href="index.html">首页</a></li>
                 <li><a href="article_list.html">班级公告</a></li>
                 <li><a href="toolbox.html">工具箱</a></li>
-                <li><a href="article.html">发文章</a></li>
+                <li><a href="article.html">发布文章</a></li>
                 <li><a href="gallery.html">班级相册</a></li>
             </ul>
             <div class="user-section">
@@ -234,35 +734,51 @@
 
     <div class="chat-page">
         <div class="chat-container" id="chatContainer">
-            <!-- 左侧列表 -->
             <div class="user-list-panel">
                 <div class="panel-header">
-                    <div style="margin-bottom:10px; font-weight:bold; color:#667eea; display:flex; justify-content:space-between;">
-                        <span><i class="fas fa-comments"></i> 班级通讯录</span>
+                    <div class="panel-label">Xchat Style</div>
+                    <div class="panel-title-row">
+                        <div>
+                            <div class="panel-title">
+                                <i class="fas fa-comments"></i>
+                                <span>班级私信</span>
+                            </div>
+                            <div class="panel-subtitle">更像 X 私信页的深色聊天面板，切换联系人会更聚焦。</div>
+                        </div>
+                        <div class="panel-indicator"></div>
                     </div>
                     <div class="search-box">
-                        <input type="text" id="userSearch" placeholder="搜索联系人...">
+                        <input type="text" id="userSearch" placeholder="搜索联系人..." autocomplete="off">
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
+
                 <div class="user-list" id="userList">
-                    <div style="padding:20px; text-align:center; color:#999;">
-                        <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    <div style="padding: 24px 20px; text-align: center; color: rgba(139, 152, 165, 0.92);">
+                        <i class="fas fa-spinner fa-spin"></i> 正在加载联系人...
                     </div>
                 </div>
             </div>
 
-            <!-- 右侧聊天 -->
             <div class="chat-window">
                 <div class="chat-header">
                     <i class="fas fa-chevron-left" id="mobileBackBtn" onclick="exitChat()"></i>
-                    <span id="chatHeaderTitle">请选择联系人</span>
+                    <div class="chat-title-group">
+                        <span class="chat-presence"></span>
+                        <div class="chat-title-text">
+                            <span id="chatHeaderTitle">请选择联系人</span>
+                            <span id="chatHeaderMeta">打开左侧列表，开始一段新对话</span>
+                        </div>
+                    </div>
                 </div>
-                
+
                 <div class="messages-area" id="msgArea">
-                    <div style="text-align:center; margin-top:50px; color:#ccc;">
-                        <i class="fas fa-paper-plane" style="font-size:3rem; margin-bottom:10px;"></i>
-                        <p>选择左侧好友开始聊天</p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
+                        <h3>选择一个联系人</h3>
+                        <p>消息记录会显示在这里，选中联系人后输入框会自动解锁。</p>
                     </div>
                 </div>
 
@@ -276,37 +792,70 @@
         </div>
     </div>
 
-    <!-- 页脚省略... -->
-
     <script>
         const API_BASE = "https://kczx.pythonanywhere.com/api";
         let currentReceiverId = null;
-        let globalTimer = null; // 新增：全局大管家定时器
-        let myId = null; 
-        let allUsers =[];
+        let globalTimer = null;
+        let myId = null;
+        let allUsers = [];
 
         function parseJwt(token) {
-            try { return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); } 
-            catch (e) { return null; }
+            try {
+                return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            } catch (e) {
+                return null;
+            }
         }
 
-        // 1. 初始化
+        function escapeHtml(value = '') {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderIdleState(title = '选择一个联系人', description = '消息记录会显示在这里，选中联系人后输入框会自动解锁。') {
+            const msgArea = document.getElementById('msgArea');
+            msgArea.removeAttribute('data-signature');
+            msgArea.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h3>${escapeHtml(title)}</h3>
+                    <p>${escapeHtml(description)}</p>
+                </div>
+            `;
+
+            document.getElementById('chatHeaderTitle').innerText = '请选择联系人';
+            document.getElementById('chatHeaderMeta').innerText = '打开左侧列表，开始一段新对话';
+
+            const input = document.getElementById('msgInput');
+            input.disabled = true;
+            input.value = '';
+            input.style.height = 'auto';
+            input.placeholder = '发送消息...';
+            document.getElementById('sendBtn').disabled = true;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert("请先登录");
-                window.location.href = 'login.html'; 
+                alert('请先登录');
+                window.location.href = 'login.html';
                 return;
             }
-            const user = parseJwt(token);
-            if (user) myId = user.user_id; 
-            
-            await loadUserList();
 
-            // 启动全局心跳雷达：每3秒同时侦测未读红点和最新消息
+            const user = parseJwt(token);
+            if (user) {
+                myId = user.user_id;
+            }
+
+            await loadUserList();
             globalTimer = setInterval(pollGlobalData, 3000);
 
-            // 绑定发送事件
             document.getElementById('sendBtn').addEventListener('click', () => sendMessage());
             document.getElementById('msgInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -318,30 +867,28 @@
             document.getElementById('userSearch').addEventListener('input', (e) => {
                 renderUserList(e.target.value.trim());
             });
-            
+
             const textarea = document.getElementById('msgInput');
             textarea.addEventListener('input', function() {
                 this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                this.style.height = this.scrollHeight + 'px';
             });
         });
 
-        // --- 全局雷达扫描 (获取红点 + 刷新聊天记录) ---
         async function pollGlobalData() {
-            // 1. 扫描未读消息数量，画红点
             try {
                 const res = await fetch(`${API_BASE}/messages/unread`, {
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
                 });
+
                 if (res.ok) {
                     const unreadCounts = await res.json();
-                    
-                    document.querySelectorAll('.user-item').forEach(el => {
+
+                    document.querySelectorAll('.user-item').forEach((el) => {
                         const uid = el.getAttribute('data-uid');
                         let badge = el.querySelector('.unread-badge');
                         const count = unreadCounts[uid] || 0;
-                        
-                        // 规则：有未读消息，且目前没有打开跟这个人的聊天框，就亮红点
+
                         if (count > 0 && String(uid) !== String(currentReceiverId)) {
                             if (!badge) {
                                 badge = document.createElement('div');
@@ -349,203 +896,310 @@
                                 el.appendChild(badge);
                             }
                             badge.innerText = count > 99 ? '99+' : count;
-                        } else {
-                            if (badge) badge.remove();
+                        } else if (badge) {
+                            badge.remove();
                         }
                     });
                 }
             } catch (e) {
-                console.error("获取红点失败", e);
+                console.error('获取未读消息失败', e);
             }
 
-            // 2. 刷新当前的聊天记录
             if (currentReceiverId) {
                 loadMessages();
             }
         }
 
-        // --- 视图切换 ---
-        function selectUser(uid, name, el) {
+        function selectUser(uid, name, handle, el) {
             currentReceiverId = uid;
             document.getElementById('chatHeaderTitle').innerText = name;
-            
-            document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('chatHeaderMeta').innerText = handle ? `@${handle}` : '在线';
+
+            document.querySelectorAll('.user-item').forEach((item) => item.classList.remove('active'));
             el.classList.add('active');
 
-            // 体验优化：点进去的一瞬间，直接拔掉红点
             const badge = el.querySelector('.unread-badge');
-            if (badge) badge.remove();
+            if (badge) {
+                badge.remove();
+            }
 
             const input = document.getElementById('msgInput');
             input.disabled = false;
+            input.placeholder = `发送消息给 ${name}`;
             document.getElementById('sendBtn').disabled = false;
-
             document.getElementById('chatContainer').classList.add('chat-active');
-            
-            // 立即加载消息，不干等轮询
+
             loadMessages();
         }
 
         window.exitChat = function() {
+            currentReceiverId = null;
+            document.querySelectorAll('.user-item').forEach((item) => item.classList.remove('active'));
             document.getElementById('chatContainer').classList.remove('chat-active');
-            currentReceiverId = null; // 退出聊天后，再收到消息就会正常亮红点
+            renderIdleState();
         };
 
-        // --- 业务逻辑 ---
         async function loadUserList() {
             try {
                 const res = await fetch(`${API_BASE}/members`, {
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
                 });
-                if (!res.ok) throw new Error("Load Failed");
+
+                if (!res.ok) {
+                    throw new Error('Load Failed');
+                }
+
                 const data = await res.json();
                 allUsers = data.users || data;
                 renderUserList();
-                pollGlobalData(); // 首次加载完列表后立刻查一次红点
-            } catch (e) { 
-                document.getElementById('userList').innerHTML = '<div style="padding:20px;text-align:center;">加载失败</div>';
+                pollGlobalData();
+            } catch (e) {
+                document.getElementById('userList').innerHTML = `
+                    <div style="padding: 24px 20px; text-align: center; color: rgba(255, 92, 92, 0.9);">
+                        联系人加载失败，请稍后重试
+                    </div>
+                `;
             }
         }
 
         function renderUserList(keyword = '') {
             const container = document.getElementById('userList');
             container.innerHTML = '';
-            const filtered = allUsers.filter(u => {
-                if (String(u.id) === String(myId)) return false;
-                const name = u.display_name || u.username;
+
+            const filtered = allUsers.filter((u) => {
+                if (String(u.id) === String(myId)) {
+                    return false;
+                }
+                const name = u.display_name || u.username || '';
                 return name.toLowerCase().includes(keyword.toLowerCase());
             });
 
-            filtered.forEach(u => {
-                const name = u.display_name || u.username;
-                const el = document.createElement('div');
-                el.className = `user-item ${currentReceiverId === u.id ? 'active' : ''}`;
-                
-                // 极其重要：绑定 data-uid 用于查找并放置红点
-                el.setAttribute('data-uid', u.id); 
-
-                el.innerHTML = `
-                    <div class="user-avatar">${name[0].toUpperCase()}</div>
-                    <div class="user-info">
-                        <div class="user-name">${name}</div>
-                        <div class="user-role">${u.level > 1 ? '管理员' : '成员'}</div>
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div style="padding: 24px 20px; text-align: center; color: rgba(139, 152, 165, 0.92);">
+                        没有找到匹配的联系人
                     </div>
                 `;
-                el.onclick = () => selectUser(u.id, name, el);
+                return;
+            }
+
+            filtered.forEach((u) => {
+                const name = u.display_name || u.username || '用户';
+                const handle = u.username || '';
+                const roleText = u.level > 1 ? '管理员' : '成员';
+                const el = document.createElement('div');
+                el.className = `user-item ${String(currentReceiverId) === String(u.id) ? 'active' : ''}`;
+                el.setAttribute('data-uid', u.id);
+                el.innerHTML = `
+                    <div class="user-avatar">${escapeHtml(name[0].toUpperCase())}</div>
+                    <div class="user-info">
+                        <div class="user-name-row">
+                            <div class="user-name">${escapeHtml(name)}</div>
+                            <div class="user-handle">${handle ? '@' + escapeHtml(handle) : ''}</div>
+                        </div>
+                        <div class="user-role">${roleText} · Xchat 风格会话</div>
+                    </div>
+                `;
+                el.onclick = () => selectUser(u.id, name, handle, el);
                 container.appendChild(el);
             });
         }
 
-        // --- 时间与消息加载 (保持不变) ---
         function formatTimeDisplay(dateString, type = 'smart') {
-            const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
+            const date = new Date(dateString.endsWith('Z') ? dateString : `${dateString}Z`);
             const now = new Date();
             const diffMins = Math.floor((now - date) / 60000);
-            const absoluteTime = date.toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false, hour: '2-digit', minute: '2-digit' });
+            const absoluteTime = date.toLocaleTimeString('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
 
-            if (type === 'absolute') return absoluteTime;
-            if (diffMins < 1) return '刚刚';
-            if (diffMins < 60) return `${diffMins}分钟前`;
+            if (type === 'absolute') {
+                return absoluteTime;
+            }
+            if (diffMins < 1) {
+                return '刚刚';
+            }
+            if (diffMins < 60) {
+                return `${diffMins}分钟前`;
+            }
             return absoluteTime;
         }
 
         function toggleTime(element, dateString) {
             const currentText = element.innerText;
-            const absoluteTime = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z').toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false, hour: '2-digit', minute: '2-digit' });
+            const absoluteTime = new Date(dateString.endsWith('Z') ? dateString : `${dateString}Z`).toLocaleTimeString('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             element.innerText = (currentText.includes('前') || currentText === '刚刚') ? absoluteTime : formatTimeDisplay(dateString);
         }
 
         async function loadMessages() {
-            if (!currentReceiverId) return;
+            if (!currentReceiverId) {
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/messages/history/${currentReceiverId}`, {
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
                 });
                 const msgs = await res.json();
                 const msgArea = document.getElementById('msgArea');
-                
-                if (msgArea.getAttribute('data-len') == msgs.length) return;
-                msgArea.setAttribute('data-len', msgs.length);
+
+                const signature = msgs.map((msg) => `${msg.id}:${msg.created_at}:${msg.is_read}:${msg.content}`).join('|');
+                if (msgArea.getAttribute('data-signature') === signature) {
+                    return;
+                }
+                msgArea.setAttribute('data-signature', signature);
                 msgArea.innerHTML = '';
 
+                if (!msgs.length) {
+                    msgArea.innerHTML = `
+                        <div class="empty-state compact">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <h3>还没有聊天记录</h3>
+                            <p>发送第一条消息，让这个会话真正开始。</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 let lastDateStr = '';
-                msgs.forEach(msg => {
-                    const isMe = (String(msg.sender_id) === String(myId));
-                    const msgDate = new Date(msg.created_at.endsWith('Z') ? msg.created_at : msg.created_at + 'Z');
-                    const dateStr = msgDate.toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'});
-                    
+                msgs.forEach((msg) => {
+                    const isMe = String(msg.sender_id) === String(myId);
+                    const msgDate = new Date(msg.created_at.endsWith('Z') ? msg.created_at : `${msg.created_at}Z`);
+                    const dateStr = msgDate.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
                     if (dateStr !== lastDateStr) {
-                        const todayStr = new Date().toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'});
+                        const todayStr = new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
                         msgArea.innerHTML += `<div class="date-divider"><span>${dateStr === todayStr ? '今天' : dateStr}</span></div>`;
                         lastDateStr = dateStr;
                     }
 
-                    const statusIcon = isMe ? (msg.is_read ? '<i class="fas fa-check-double msg-status read"></i>' : '<i class="fas fa-check msg-status sent"></i>') : '';
-                    let copyBtnHtml = `<div class="copy-btn" onclick="copyText(this)">复制</div>`;
-                    let recallBtnHtml = isMe ? `<div class="recall-btn" onclick="recallMessage(${msg.id})">撤回</div>` : '';
-                    
+                    const statusIcon = isMe
+                        ? (msg.is_read
+                            ? '<i class="fas fa-check-double msg-status read"></i>'
+                            : '<i class="fas fa-check msg-status sent"></i>')
+                        : '';
+                    const recallBtnHtml = isMe ? `<div class="recall-btn" onclick="recallMessage(${msg.id})">撤回</div>` : '';
+
                     const bubble = document.createElement('div');
                     bubble.className = `message-bubble ${isMe ? 'msg-right' : 'msg-left'}`;
-                    bubble.innerHTML = `${copyBtnHtml}${recallBtnHtml}<div class="msg-content-text">${msg.content}</div><div class="msg-meta"><span class="msg-time" onclick="toggleTime(this, '${msg.created_at}')">${formatTimeDisplay(msg.created_at)}</span>${statusIcon}</div>`;
+                    bubble.innerHTML = `
+                        <div class="copy-btn" onclick="copyText(this)">复制</div>
+                        ${recallBtnHtml}
+                        <div class="msg-content-text">${escapeHtml(msg.content)}</div>
+                        <div class="msg-meta">
+                            <span class="msg-time" onclick="toggleTime(this, '${msg.created_at}')">${formatTimeDisplay(msg.created_at)}</span>
+                            ${statusIcon}
+                        </div>
+                    `;
                     msgArea.appendChild(bubble);
                 });
+
                 msgArea.scrollTop = msgArea.scrollHeight;
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function copyText(btnElement) {
-            const text = btnElement.nextElementSibling.nextElementSibling.innerText;
+            const bubble = btnElement.closest('.message-bubble');
+            const text = bubble ? bubble.querySelector('.msg-content-text')?.innerText || '' : '';
             navigator.clipboard.writeText(text).then(() => {
                 const originalText = btnElement.innerText;
                 btnElement.innerText = '已复制';
-                setTimeout(() => btnElement.innerText = originalText, 1000);
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                }, 1000);
             });
         }
 
         async function sendMessage(retryContent = null) {
             const input = document.getElementById('msgInput');
             const content = retryContent || input.value.trim();
-            if (!content || !currentReceiverId) return;
+            if (!content || !currentReceiverId) {
+                return;
+            }
 
-            input.value = ''; input.style.height = 'auto';
+            input.value = '';
+            input.style.height = 'auto';
 
             const msgArea = document.getElementById('msgArea');
             const temp = document.createElement('div');
             temp.className = 'message-bubble msg-right';
-            temp.innerHTML = `<div class="msg-content-text">${content}</div><div class="msg-meta"><span>发送中...</span><i class="fas fa-spinner fa-spin msg-status"></i></div>`;
+            temp.dataset.content = content;
+            temp.innerHTML = `
+                <div class="msg-content-text">${escapeHtml(content)}</div>
+                <div class="msg-meta">
+                    <span>发送中...</span>
+                    <i class="fas fa-spinner fa-spin msg-status"></i>
+                </div>
+            `;
             msgArea.appendChild(temp);
             msgArea.scrollTop = msgArea.scrollHeight;
 
             try {
                 const res = await fetch(`${API_BASE}/messages/send`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-                    body: JSON.stringify({ receiver_id: currentReceiverId, content: content })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ receiver_id: currentReceiverId, content })
                 });
+
                 if (res.ok) {
-                    loadMessages();
                     temp.remove();
-                } else { throw new Error(); }
+                    loadMessages();
+                } else {
+                    throw new Error('send failed');
+                }
             } catch (e) {
-                temp.innerHTML = `<div class="msg-content-text">${content}</div><div class="msg-meta" style="color:#ff4757"><span class="retry-btn" onclick="retrySend(this, '${content.replace(/'/g, "\\'")}')">重试</span><span>发送失败</span></div>`;
+                temp.innerHTML = `
+                    <div class="msg-content-text">${escapeHtml(content)}</div>
+                    <div class="msg-meta" style="color: #ff7b7b;">
+                        <span class="retry-btn" onclick="retrySend(this)">重试</span>
+                        <span>发送失败</span>
+                    </div>
+                `;
             }
         }
 
-        function retrySend(btn, content) {
-            btn.closest('.message-bubble').remove();
+        function retrySend(btn) {
+            const bubble = btn.closest('.message-bubble');
+            const content = bubble?.dataset.content || '';
+            if (bubble) {
+                bubble.remove();
+            }
             sendMessage(content);
         }
 
         window.recallMessage = async function(mid) {
-            if(!confirm("确定要撤回这条消息吗？")) return;
+            if (!confirm('确定要撤回这条消息吗？')) {
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/messages/recall/${mid}`, {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
                 });
-                if(res.ok) loadMessages();
-            } catch(e) { alert("网络错误"); }
-        }
+
+                if (res.ok) {
+                    loadMessages();
+                }
+            } catch (e) {
+                alert('网络错误，请稍后重试');
+            }
+        };
     </script>
 </body>
 </html>

@@ -408,3 +408,73 @@ body::before {
         text-align: center;
     }
 }
+
+/* Xchat theme sync */
+:root {
+    --primary-gradient: linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+    --primary-color: #1d9bf0;
+    --primary-dark: #1171bb;
+    --secondary-color: #46b7ff;
+    --glass-bg: rgba(10, 15, 22, 0.78);
+    --glass-bg-hover: rgba(14, 20, 28, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(29, 155, 240, 0.22);
+    --glass-shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+    --glass-blur: blur(22px);
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(29, 155, 240, 0.15), transparent 28%),
+        radial-gradient(circle at top right, rgba(120, 119, 198, 0.12), transparent 30%),
+        linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+}
+
+body::before {
+    background:
+        radial-gradient(circle at top left, rgba(29, 155, 240, 0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(70, 183, 255, 0.1), transparent 32%);
+}
+
+.header {
+    background: rgba(10, 15, 22, 0.82);
+    box-shadow: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logo,
+.user-display-name,
+.welcome-message {
+    color: #1d9bf0;
+}
+
+.nav-links a {
+    color: #8b98a5;
+    border-radius: 999px;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    background: rgba(29, 155, 240, 0.15);
+    color: #f5f7fa;
+}
+
+.profile-card,
+.profile-header,
+[class$="-card"] {
+    background: rgba(10, 15, 22, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(22px);
+}
+
+.profile-avatar {
+    background: linear-gradient(135deg, #1d9bf0, #46b7ff);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.btn,
+button,
+[class$="-btn"] {
+    border-radius: 999px;
+}

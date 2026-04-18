@@ -1731,3 +1731,98 @@ body {
     50% { opacity: 1; }
     100% { opacity: 0.6; }
 }
+
+/* Xchat theme sync */
+:root {
+    --primary-color: #1d9bf0;
+    --secondary-color: #46b7ff;
+    --accent-color: #69c7ff;
+    --success-color: #00ba7c;
+    --warning-color: #f6c23e;
+    --danger-color: #ff6b6b;
+    --light-color: rgba(10, 15, 22, 0.82);
+    --dark-color: #f5f7fa;
+    --gray-color: #8b98a5;
+    --gradient-start: #101722;
+    --gradient-end: #0a1017;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(29, 155, 240, 0.15), transparent 28%),
+        radial-gradient(circle at top right, rgba(120, 119, 198, 0.12), transparent 30%),
+        linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+    color: #f5f7fa;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, rgba(14, 20, 28, 0.98), rgba(9, 13, 18, 0.97));
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+}
+
+.logo,
+.logo h2,
+.sidebar-nav a,
+.sidebar-nav i {
+    color: #f5f7fa;
+}
+
+.sidebar-nav a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-nav a.active {
+    background: linear-gradient(135deg, rgba(29, 155, 240, 0.16), rgba(29, 155, 240, 0.08));
+    border-left-color: #1d9bf0;
+}
+
+.topbar,
+.content-section,
+.stat-card,
+.modal-content,
+.search-container,
+.search-container input,
+.content-section input,
+.content-section select,
+.content-section textarea,
+.content-section table,
+.content-section .table-responsive,
+[class$="-card"] {
+    background: rgba(10, 15, 22, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f5f7fa;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(22px);
+}
+
+.topbar-left h2,
+.user-name,
+.content-section h2,
+.content-section h3,
+table th,
+table td {
+    color: #f5f7fa;
+}
+
+.search-container button,
+.menu-toggle {
+    color: #8b98a5;
+}
+
+.content-section input,
+.content-section select,
+.content-section textarea,
+.search-container input {
+    background: rgba(18, 24, 31, 0.96);
+}
+
+.btn-small,
+button,
+[class$="-btn"] {
+    border-radius: 999px;
+}
+
+.skeleton-row {
+    background: rgba(255, 255, 255, 0.08);
+}

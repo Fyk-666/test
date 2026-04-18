@@ -351,3 +351,87 @@ input:focus ~ .input-icon {
         text-align: center;
     }
 }
+
+/* Xchat theme sync */
+:root {
+    --primary-gradient: linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+    --primary-color: #1d9bf0;
+    --primary-dark: #1171bb;
+    --secondary-color: #46b7ff;
+    --accent-color: #69c7ff;
+    --glass-bg: rgba(10, 15, 22, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(22px);
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(29, 155, 240, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(120, 119, 198, 0.1), transparent 30%),
+        linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+}
+
+body::before {
+    background: radial-gradient(circle, rgba(29, 155, 240, 0.12) 0%, transparent 60%);
+}
+
+.auth-container {
+    background: rgba(10, 15, 22, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(22px);
+}
+
+.brand-logo {
+    background: linear-gradient(135deg, #1d9bf0, #46b7ff);
+    box-shadow: 0 16px 32px rgba(29, 155, 240, 0.22);
+}
+
+.brand-logo svg {
+    fill: #ffffff;
+}
+
+.login-header h2,
+.form-group label,
+.login-footer,
+.remember-me,
+.forgot-link {
+    color: #f5f7fa;
+}
+
+input {
+    background: rgba(18, 24, 31, 0.96);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f5f7fa;
+}
+
+input::placeholder {
+    color: #8b98a5;
+}
+
+input:focus {
+    background: rgba(18, 24, 31, 1);
+    border-color: rgba(29, 155, 240, 0.78);
+    box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.12);
+}
+
+.input-icon,
+.show-password {
+    color: #8b98a5;
+}
+
+.auth-container button,
+.auth-container .btn,
+button[type="submit"] {
+    background: linear-gradient(135deg, #1d9bf0, #46b7ff);
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 16px 32px rgba(29, 155, 240, 0.22);
+}
+
+.auth-container button:hover,
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, #1171bb, #1d9bf0);
+}

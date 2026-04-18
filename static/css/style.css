@@ -466,9 +466,82 @@ footer {
 
     .card-grid,
     .gallery-grid,
-    .footer-container {
+.footer-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* Xchat theme sync */
+:root {
+    --bg: #05080d;
+    --bg-soft: #0a1017;
+    --panel: rgba(10, 15, 22, 0.78);
+    --panel-strong: rgba(14, 20, 28, 0.92);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #f5f7fa;
+    --muted: #8b98a5;
+    --accent-a: #1d9bf0;
+    --accent-b: #46b7ff;
+    --accent-c: #1171bb;
+    --shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+    --radius-lg: 28px;
+    --radius-md: 22px;
+    --radius-sm: 16px;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(29, 155, 240, 0.15), transparent 28%),
+        radial-gradient(circle at top right, rgba(120, 119, 198, 0.12), transparent 30%),
+        linear-gradient(180deg, #05080d 0%, #0a1017 100%);
+}
+
+body::before {
+    background: radial-gradient(circle, rgba(29, 155, 240, 0.42), transparent 70%);
+}
+
+body::after {
+    background: radial-gradient(circle, rgba(70, 183, 255, 0.32), transparent 70%);
+}
+
+nav,
+.topbar {
+    background: rgba(10, 15, 22, 0.82);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-links a {
+    color: var(--muted);
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+    background: rgba(29, 155, 240, 0.15);
+    color: var(--text);
+}
+
+.btn,
+.mobile-toggle,
+.login-btn,
+.register-btn,
+.logout-btn,
+.secondary-btn,
+.ghost-btn {
+    border-radius: 999px;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+    color: #ffffff;
+}
+
+.secondary-btn,
+.ghost-btn,
+.login-btn,
+.register-btn,
+.logout-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 

@@ -1,20 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. 新增：智能跳转函数 (修复报错的核心) ---
+    // --- 1. 新增：智能跳转函数 (使用相对路径且不包含 .html) ---
     function smartRedirect(destination) {
-        const baseUrl = window.location.origin;
-        const pathName = window.location.pathname;
-        
-        // 移除 destination 开头的 / 防止双斜杠
-        const targetPage = destination.startsWith('/') ? destination.substring(1) : destination;
-
-        // 检查当前是否在 GitHub 的 /test/ 子目录下
-        if (pathName.includes('/test/')) {
-            window.location.href = `${baseUrl}/test/${targetPage}`;
-        } else {
-            // Netlify 或本地环境
-            window.location.href = `${baseUrl}/${targetPage}`;
-        }
+        // 移除 .html 后缀并作为相对路径跳转
+        const target = destination.replace(/\.html$/, '');
+        window.location.href = target;
     }
 
     // 密码可见性切换
@@ -40,12 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // 如果没有 Token
             if (!token) {
                 // 如果当前已经在登录页，什么都不做，静静等待用户登录
-                if (window.location.pathname.includes('login.html')) {
+                if (window.location.pathname.includes('login')) {
                     return; 
                 } 
                 // 如果在其他页面没 Token，才跳回登录页
                 else {
-                    smartRedirect('login.html');
+                    smartRedirect('login');
                     return;
                 }
             }
@@ -63,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('user');
                 
                 // 如果不在登录页，跳回登录页
-                if (!window.location.pathname.includes('login.html')) {
-                    smartRedirect('login.html');
+                if (!window.location.pathname.includes('login')) {
+                    smartRedirect('login');
                 }
                 return;
             }
@@ -140,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
 
                     // 登录成功后重定向
-                    smartRedirect('index.html');
+                    smartRedirect('index');
                 } else {
                     // 显示错误消息
                     const errorBox = document.createElement('div');
